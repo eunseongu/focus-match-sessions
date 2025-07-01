@@ -7,7 +7,8 @@ import { Timer, Clock, Lock, Heart, ThumbsUp, Coffee, Zap, Bot } from 'lucide-re
 const Session = () => {
   const location = useLocation();
   const sessionData = location.state || {};
-  const [timeLeft, setTimeLeft] = useState(sessionData.sessionTime || 620); // 10분 20초
+  // 시뮬레이션을 위해 항상 10분(600초)으로 고정
+  const [timeLeft, setTimeLeft] = useState(600); // 10분 고정
   const [isRunning, setIsRunning] = useState(true);
   const [partnerProgress] = useState(85);
   const [canExit, setCanExit] = useState(false);
@@ -15,7 +16,7 @@ const Session = () => {
   const [partnerEmoji, setPartnerEmoji] = useState('');
   
   const navigate = useNavigate();
-  const exitLockTime = 2 * 60; // 2분으로 변경
+  const exitLockTime = 3; // 3초로 변경
   const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
   const isBot = sessionData.isBot || false;
   
@@ -38,8 +39,8 @@ const Session = () => {
           return 0;
         }
         
-        // 퇴장 잠금 시간 해제 (2분 후)
-        if (prev === (timeLeft - exitLockTime)) {
+        // 퇴장 잠금 시간 해제 (3초 후)
+        if (prev === (600 - exitLockTime)) {
           setCanExit(true);
         }
         
@@ -87,7 +88,7 @@ const Session = () => {
   };
 
   const getProgress = () => {
-    const totalTime = sessionData.sessionTime || 620;
+    const totalTime = 600; // 10분 고정
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
@@ -97,8 +98,7 @@ const Session = () => {
 
   const handleEndSession = () => {
     if (!canExit) {
-      const remainingLockTime = Math.ceil((exitLockTime - (sessionData.sessionTime - timeLeft)) / 60);
-      alert(`최소 ${remainingLockTime}분 더 집중하셔야 퇴장할 수 있습니다.`);
+      alert('3초가 지나야 퇴장할 수 있습니다.');
       return;
     }
     navigate('/auth-exit', { state: sessionData });
@@ -217,7 +217,7 @@ const Session = () => {
             ) : (
               <>
                 <Lock className="w-4 h-4 mr-2" />
-                {Math.ceil((exitLockTime - (sessionData.sessionTime - timeLeft)) / 60)}분 후 퇴장 가능
+                3초 후 퇴장 가능
               </>
             )}
           </Button>
