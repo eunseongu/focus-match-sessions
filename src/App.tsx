@@ -23,7 +23,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/session-mode" element={<SessionMode />} />
           <Route path="/session-request" element={<SessionRequest />} />
+          <Route path="/qr-matching" element={<QRMatching />} />
           <Route path="/matching" element={<Matching />} />
           <Route path="/auth-entry" element={<AuthEntry />} />
           <Route path="/session" element={<Session />} />

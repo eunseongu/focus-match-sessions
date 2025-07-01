@@ -66,7 +66,7 @@ const Index = () => {
               QR 인증으로 정확한 집중 기록을 남겨보세요.
             </p>
             <Button 
-              onClick={() => navigate('/session-request')}
+              onClick={() => navigate('/session-mode')}
               size="lg"
               className="text-lg px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >

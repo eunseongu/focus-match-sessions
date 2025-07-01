@@ -4,14 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Clock, Timer, Target } from 'lucide-react';
 
 const SessionRequest = () => {
-  const [sessionTime, setSessionTime] = useState(25);
+  const [sessionTime, setSessionTime] = useState(10); // 기본값 10분으로 변경
+  const [additionalSeconds, setAdditionalSeconds] = useState(20); // 추가 20초
   const [selectedTag, setSelectedTag] = useState('');
   const [goal, setGoal] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionMode = location.state || {};
 
   const tags = [
     '공부', '업무', '독서', '프로젝트', '운동', '명상'
@@ -23,9 +26,16 @@ const SessionRequest = () => {
       return;
     }
     
-    console.log('세션 신청:', { sessionTime, selectedTag, goal });
+    const totalSeconds = sessionTime * 60 + additionalSeconds;
+    console.log('세션 신청:', { sessionTime: totalSeconds, selectedTag, goal, mode: sessionMode.mode });
     navigate('/matching', { 
-      state: { sessionTime, selectedTag, goal } 
+      state: { 
+        sessionTime: totalSeconds, 
+        selectedTag, 
+        goal, 
+        mode: sessionMode.mode,
+        partnerId: sessionMode.partnerId 
+      } 
     });
   };
 
@@ -36,28 +46,47 @@ const SessionRequest = () => {
           <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Timer className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">집중 세션 신청</h1>
-          <p className="text-gray-600">함께 집중할 파트너를 찾아보세요</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">집중 세션 설정</h1>
+          <p className="text-gray-600">
+            {sessionMode.mode === 'qr' ? 'QR 매칭' : '자동 매칭'} 세션을 설정하세요
+          </p>
         </div>
 
         <div className="space-y-6">
           {/* 시간 선택 */}
           <div>
-            <Label htmlFor="session-time" className="text-sm font-medium text-gray-700 mb-2 block">
-              세션 시간 (분)
+            <Label htmlFor="session-time" className="text-sm font-medium text-gray-700 mb-3 block">
+              세션 시간 (기본: 10분 20초)
             </Label>
-            <div className="flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-gray-400" />
-              <Input
-                id="session-time"
-                type="number" 
-                value={sessionTime}
-                onChange={(e) => setSessionTime(Number(e.target.value))}
-                min="5"
-                max="120"
-                className="flex-1"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-gray-400" />
+                <Input
+                  id="session-time"
+                  type="number" 
+                  value={sessionTime}
+                  onChange={(e) => setSessionTime(Number(e.target.value))}
+                  min="1"
+                  max="120"
+                  className="flex-1"
+                />
+                <span className="text-sm text-gray-500">분</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="number" 
+                  value={additionalSeconds}
+                  onChange={(e) => setAdditionalSeconds(Number(e.target.value))}
+                  min="0"
+                  max="59"
+                  className="flex-1"
+                />
+                <span className="text-sm text-gray-500">초</span>
+              </div>
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              총 시간: {sessionTime}분 {additionalSeconds}초
+            </p>
           </div>
 
           {/* 태그 선택 */}

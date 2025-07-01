@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Clock, Lock, Heart, ThumbsUp, Coffee, Zap } from 'lucide-react';
+import { Timer, Clock, Lock, Heart, ThumbsUp, Coffee, Zap, Bot } from 'lucide-react';
 
 const Session = () => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const location = useLocation();
+  const sessionData = location.state || {};
+  const [timeLeft, setTimeLeft] = useState(sessionData.sessionTime || 620); // 10분 20초
   const [isRunning, setIsRunning] = useState(true);
   const [partnerProgress] = useState(85);
   const [canExit, setCanExit] = useState(false);
@@ -13,15 +15,13 @@ const Session = () => {
   const [partnerEmoji, setPartnerEmoji] = useState('');
   
   const navigate = useNavigate();
-  const location = useLocation();
-  const sessionData = location.state || {};
-
-  const exitLockTime = 10 * 60; // 10분
+  const exitLockTime = 2 * 60; // 2분으로 변경
   const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
+  const isBot = sessionData.isBot || false;
   
   const motivationMessages = [
     '지금 이 순간, 집중하고 있는 자신이 자랑스러워요!',
-    '파트너도 함께 열심히 하고 있어요 💪',
+    `${isBot ? '도우미가' : '파트너도'} 함께 열심히 하고 있어요 💪`,
     '목표까지 한걸음씩 나아가고 있어요',
     '집중하는 시간이 쌓여 큰 성취가 될 거예요',
     '지금의 노력이 미래의 나를 만들어요'
@@ -38,8 +38,8 @@ const Session = () => {
           return 0;
         }
         
-        // 퇴장 잠금 시간 해제
-        if (prev === (25 * 60 - exitLockTime)) {
+        // 퇴장 잠금 시간 해제 (2분 후)
+        if (prev === (timeLeft - exitLockTime)) {
           setCanExit(true);
         }
         
@@ -64,7 +64,7 @@ const Session = () => {
     return () => clearInterval(messageTimer);
   }, []);
 
-  // 파트너 이모지 시뮬레이션
+  // 파트너/봇 이모지 시뮬레이션
   useEffect(() => {
     const emojiTimer = setInterval(() => {
       if (Math.random() > 0.7) {
@@ -75,10 +75,10 @@ const Session = () => {
           setPartnerEmoji('');
         }, 3000);
       }
-    }, 30000); // 30초마다 확률적으로
+    }, isBot ? 20000 : 30000); // 봇은 더 자주 반응
 
     return () => clearInterval(emojiTimer);
-  }, []);
+  }, [isBot]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -87,18 +87,18 @@ const Session = () => {
   };
 
   const getProgress = () => {
-    const totalTime = 25 * 60;
+    const totalTime = sessionData.sessionTime || 620;
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
   const handleSendEmoji = (emoji: string) => {
-    // 실제로는 서버로 전송
     console.log('이모지 전송:', emoji);
   };
 
   const handleEndSession = () => {
     if (!canExit) {
-      alert(`최소 ${Math.ceil((25 * 60 - timeLeft - exitLockTime) / 60)}분 더 집중하셔야 퇴장할 수 있습니다.`);
+      const remainingLockTime = Math.ceil((exitLockTime - (sessionData.sessionTime - timeLeft)) / 60);
+      alert(`최소 ${remainingLockTime}분 더 집중하셔야 퇴장할 수 있습니다.`);
       return;
     }
     navigate('/auth-exit', { state: sessionData });
@@ -106,7 +106,7 @@ const Session = () => {
 
   const handleEmergencyExit = () => {
     if (confirm('정말로 세션을 중단하시겠습니까? 이는 실패로 기록됩니다.')) {
-      navigate('/');
+      navigate('/session-mode');
     }
   };
 
@@ -142,7 +142,9 @@ const Session = () => {
             <Timer className="w-8 h-8 text-purple-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">집중 세션 진행 중</h1>
-          <p className="text-gray-600">파트너와 함께 집중하고 있습니다</p>
+          <p className="text-gray-600">
+            {isBot ? '도우미와' : '파트너와'} 함께 집중하고 있습니다
+          </p>
         </div>
 
         {/* 타이머 표시 */}
@@ -161,10 +163,13 @@ const Session = () => {
           </p>
         </div>
 
-        {/* 파트너 상태 */}
+        {/* 파트너/봇 상태 */}
         <div className="bg-gray-50 p-4 rounded-lg mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">파트너 진행률</span>
+            <span className="text-sm font-medium text-gray-700 flex items-center">
+              {isBot && <Bot className="w-4 h-4 mr-1 text-purple-600" />}
+              {isBot ? '도우미' : '파트너'} 진행률
+            </span>
             {partnerEmoji && (
               <span className="text-2xl animate-bounce">{partnerEmoji}</span>
             )}
@@ -172,7 +177,7 @@ const Session = () => {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-green-500 h-2 rounded-full"
+              className={`h-2 rounded-full ${isBot ? 'bg-purple-500' : 'bg-green-500'}`}
               style={{ width: `${partnerProgress}%` }}
             ></div>
           </div>
@@ -180,7 +185,9 @@ const Session = () => {
 
         {/* 이모지 반응 */}
         <div className="mb-6">
-          <p className="text-sm font-medium text-gray-700 mb-3 text-center">파트너에게 응원 보내기</p>
+          <p className="text-sm font-medium text-gray-700 mb-3 text-center">
+            {isBot ? '도우미에게' : '파트너에게'} 응원 보내기
+          </p>
           <div className="grid grid-cols-6 gap-2">
             {emojis.map((emoji) => (
               <button
@@ -210,7 +217,7 @@ const Session = () => {
             ) : (
               <>
                 <Lock className="w-4 h-4 mr-2" />
-                {Math.ceil((exitLockTime - (25 * 60 - timeLeft)) / 60)}분 후 퇴장 가능
+                {Math.ceil((exitLockTime - (sessionData.sessionTime - timeLeft)) / 60)}분 후 퇴장 가능
               </>
             )}
           </Button>
