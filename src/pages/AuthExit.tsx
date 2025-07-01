@@ -1,20 +1,36 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { QrCode } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Target, CheckCircle2 } from 'lucide-react';
 
 const AuthExit = () => {
   const [rating, setRating] = useState<number | null>(null);
+  const [goalProof, setGoalProof] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionData = location.state || {};
 
   const handleRating = (score: number) => {
     setRating(score);
   };
 
   const handleComplete = () => {
+    if (!goalProof.trim()) {
+      alert('목표 달성 내용을 입력해주세요.');
+      return;
+    }
+    
     setIsCompleted(true);
+    console.log('세션 완료:', { 
+      goal: sessionData.goal, 
+      goalProof, 
+      rating 
+    });
+    
     setTimeout(() => {
       navigate('/stats');
     }, 2000);
@@ -25,9 +41,9 @@ const AuthExit = () => {
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
           <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <QrCode className="w-10 h-10 text-green-600" />
+            <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-green-600 mb-2">완료!</h1>
+          <h1 className="text-3xl font-bold text-green-600 mb-2">목표 달성!</h1>
           <p className="text-gray-600 mb-4">세션이 성공적으로 기록되었습니다.</p>
           <div className="text-sm text-gray-500">통계 페이지로 이동 중...</div>
         </div>
@@ -40,13 +56,41 @@ const AuthExit = () => {
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <QrCode className="w-8 h-8 text-blue-600" />
+            <Target className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">퇴장 인증</h1>
-          <p className="text-gray-600">세션을 마무리해주세요</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">목표 인증</h1>
+          <p className="text-gray-600">목표 달성 내용을 인증해주세요</p>
         </div>
 
         <div className="space-y-6">
+          {/* 설정했던 목표 표시 */}
+          {sessionData.goal && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <Label className="text-sm font-medium text-blue-700 mb-2 block">
+                설정한 목표
+              </Label>
+              <p className="text-blue-800 font-medium">{sessionData.goal}</p>
+            </div>
+          )}
+
+          {/* 목표 달성 증명 */}
+          <div>
+            <Label htmlFor="goal-proof" className="text-sm font-medium text-gray-700 mb-2 block">
+              목표 달성 내용을 구체적으로 작성해주세요 *
+            </Label>
+            <Textarea
+              id="goal-proof"
+              value={goalProof}
+              onChange={(e) => setGoalProof(e.target.value)}
+              placeholder="예: 수학 문제 8개 완료 (10개 중), 보고서 2페이지 모두 작성 완료"
+              className="min-h-[100px] resize-none"
+              maxLength={300}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {goalProof.length}/300자 • 달성한 내용을 구체적으로 적어주세요
+            </p>
+          </div>
+
           {/* 집중도 평가 */}
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -73,19 +117,9 @@ const AuthExit = () => {
             </div>
           </div>
 
-          {/* QR 코드 재인증 영역 */}
-          <div className="bg-blue-50 p-4 rounded-lg text-center">
-            <p className="text-sm text-blue-700 mb-2">
-              QR 재스캔 또는 버튼으로 완료
-            </p>
-            <div className="w-24 h-24 bg-white border-2 border-dashed border-blue-300 rounded-lg mx-auto flex items-center justify-center">
-              <QrCode className="w-8 h-8 text-blue-400" />
-            </div>
-          </div>
-
           <Button 
             onClick={handleComplete}
-            disabled={!rating}
+            disabled={!rating || !goalProof.trim()}
             className="w-full py-3 text-base"
           >
             세션 완료하기

@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Timer } from 'lucide-react';
+import { Clock, Timer, Target } from 'lucide-react';
 
 const SessionRequest = () => {
   const [sessionTime, setSessionTime] = useState(25);
   const [selectedTag, setSelectedTag] = useState('');
+  const [goal, setGoal] = useState('');
   const navigate = useNavigate();
 
   const tags = [
@@ -16,9 +18,15 @@ const SessionRequest = () => {
   ];
 
   const handleRequestSession = () => {
-    // 세션 신청 로직
-    console.log('세션 신청:', { sessionTime, selectedTag });
-    navigate('/matching');
+    if (!selectedTag || !goal.trim()) {
+      alert('집중 목적과 목표를 모두 입력해주세요.');
+      return;
+    }
+    
+    console.log('세션 신청:', { sessionTime, selectedTag, goal });
+    navigate('/matching', { 
+      state: { sessionTime, selectedTag, goal } 
+    });
   };
 
   return (
@@ -74,9 +82,28 @@ const SessionRequest = () => {
             </div>
           </div>
 
+          {/* 목표 입력 */}
+          <div>
+            <Label htmlFor="goal" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <Target className="w-4 h-4 mr-2" />
+              오늘의 집중 목표
+            </Label>
+            <Textarea
+              id="goal"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder="예: 수학 문제 10개 풀기, 보고서 2페이지 작성하기"
+              className="min-h-[80px] resize-none"
+              maxLength={200}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {goal.length}/200자 • 구체적인 목표를 입력해주세요
+            </p>
+          </div>
+
           <Button 
             onClick={handleRequestSession}
-            disabled={!selectedTag}
+            disabled={!selectedTag || !goal.trim()}
             className="w-full py-3 text-base"
           >
             매칭 시작하기

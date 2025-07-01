@@ -1,15 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Timer } from 'lucide-react';
 
 const Matching = () => {
   const [isMatching, setIsMatching] = useState(true);
   const [matchedUser, setMatchedUser] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionData = location.state || {};
 
-  // 매칭 시뮬레이션 (실제로는 서버에서 처리)
+  // 매칭 시뮬레이션
   useEffect(() => {
     const matchingTimer = setTimeout(() => {
       setIsMatching(false);
@@ -20,7 +22,7 @@ const Matching = () => {
   }, []);
 
   const handleStartAuth = () => {
-    navigate('/auth-entry');
+    navigate('/auth-entry', { state: sessionData });
   };
 
   const handleCancel = () => {
@@ -34,7 +36,21 @@ const Matching = () => {
           <div className="animate-spin w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full mx-auto mb-6"></div>
           
           <h1 className="text-2xl font-bold text-gray-800 mb-2">매칭 중...</h1>
-          <p className="text-gray-600 mb-6">집중 파트너를 찾고 있습니다</p>
+          <p className="text-gray-600 mb-4">집중 파트너를 찾고 있습니다</p>
+          
+          {/* 선택한 조건 표시 */}
+          {sessionData.selectedTag && (
+            <div className="bg-orange-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-orange-700">
+                {sessionData.sessionTime}분 • {sessionData.selectedTag}
+              </p>
+              {sessionData.goal && (
+                <p className="text-xs text-orange-600 mt-1">
+                  목표: {sessionData.goal.length > 30 ? sessionData.goal.substring(0, 30) + '...' : sessionData.goal}
+                </p>
+              )}
+            </div>
+          )}
           
           <div className="bg-orange-50 p-4 rounded-lg mb-6">
             <p className="text-sm text-orange-700">
@@ -64,7 +80,7 @@ const Matching = () => {
         
         <div className="bg-green-50 p-4 rounded-lg mb-6">
           <p className="text-sm text-green-700">
-            서로 QR 코드를 스캔하여 입장 인증을 완료해주세요
+            "집중 시작" 문구를 입력하여 입장 인증을 완료해주세요
           </p>
         </div>
 

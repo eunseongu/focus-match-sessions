@@ -1,14 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { Timer, Clock } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Timer, Clock, Lock, Heart, ThumbsUp, Coffee, Zap } from 'lucide-react';
 
 const Session = () => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25분을 초로 변환
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(true);
-  const [partnerProgress] = useState(85); // 상대방 진행률 시뮬레이션
+  const [partnerProgress] = useState(85);
+  const [canExit, setCanExit] = useState(false);
+  const [motivationMessage, setMotivationMessage] = useState('');
+  const [partnerEmoji, setPartnerEmoji] = useState('');
+  
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionData = location.state || {};
+
+  const exitLockTime = 10 * 60; // 10분
+  const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
+  
+  const motivationMessages = [
+    '지금 이 순간, 집중하고 있는 자신이 자랑스러워요!',
+    '파트너도 함께 열심히 하고 있어요 💪',
+    '목표까지 한걸음씩 나아가고 있어요',
+    '집중하는 시간이 쌓여 큰 성취가 될 거예요',
+    '지금의 노력이 미래의 나를 만들어요'
+  ];
 
   useEffect(() => {
     if (!isRunning || timeLeft <= 0) return;
@@ -17,14 +34,51 @@ const Session = () => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setIsRunning(false);
+          setCanExit(true);
           return 0;
         }
+        
+        // 퇴장 잠금 시간 해제
+        if (prev === (25 * 60 - exitLockTime)) {
+          setCanExit(true);
+        }
+        
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
   }, [isRunning, timeLeft]);
+
+  // 동기 메시지 카드
+  useEffect(() => {
+    const messageTimer = setInterval(() => {
+      const randomMessage = motivationMessages[Math.floor(Math.random() * motivationMessages.length)];
+      setMotivationMessage(randomMessage);
+      
+      setTimeout(() => {
+        setMotivationMessage('');
+      }, 5000);
+    }, 180000); // 3분마다
+
+    return () => clearInterval(messageTimer);
+  }, []);
+
+  // 파트너 이모지 시뮬레이션
+  useEffect(() => {
+    const emojiTimer = setInterval(() => {
+      if (Math.random() > 0.7) {
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+        setPartnerEmoji(randomEmoji);
+        
+        setTimeout(() => {
+          setPartnerEmoji('');
+        }, 3000);
+      }
+    }, 30000); // 30초마다 확률적으로
+
+    return () => clearInterval(emojiTimer);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -37,8 +91,17 @@ const Session = () => {
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
+  const handleSendEmoji = (emoji: string) => {
+    // 실제로는 서버로 전송
+    console.log('이모지 전송:', emoji);
+  };
+
   const handleEndSession = () => {
-    navigate('/auth-exit');
+    if (!canExit) {
+      alert(`최소 ${Math.ceil((25 * 60 - timeLeft - exitLockTime) / 60)}분 더 집중하셔야 퇴장할 수 있습니다.`);
+      return;
+    }
+    navigate('/auth-exit', { state: sessionData });
   };
 
   const handleEmergencyExit = () => {
@@ -55,9 +118,9 @@ const Session = () => {
             <Timer className="w-10 h-10 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-green-600 mb-2">세션 완료!</h1>
-          <p className="text-gray-600 mb-6">수고하셨습니다. 집중 시간이 끝났습니다.</p>
+          <p className="text-gray-600 mb-6">수고하셨습니다. 목표를 인증해주세요.</p>
           <Button onClick={handleEndSession} className="w-full py-3 text-base">
-            퇴장 인증하기
+            목표 인증하기
           </Button>
         </div>
       </div>
@@ -67,6 +130,13 @@ const Session = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        {/* 동기 메시지 카드 */}
+        {motivationMessage && (
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg mb-6 text-center animate-fade-in">
+            <p className="text-sm font-medium">{motivationMessage}</p>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Timer className="w-8 h-8 text-purple-600" />
@@ -95,6 +165,9 @@ const Session = () => {
         <div className="bg-gray-50 p-4 rounded-lg mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">파트너 진행률</span>
+            {partnerEmoji && (
+              <span className="text-2xl animate-bounce">{partnerEmoji}</span>
+            )}
             <span className="text-sm text-gray-600">{partnerProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -105,15 +178,41 @@ const Session = () => {
           </div>
         </div>
 
+        {/* 이모지 반응 */}
+        <div className="mb-6">
+          <p className="text-sm font-medium text-gray-700 mb-3 text-center">파트너에게 응원 보내기</p>
+          <div className="grid grid-cols-6 gap-2">
+            {emojis.map((emoji) => (
+              <button
+                key={emoji}
+                onClick={() => handleSendEmoji(emoji)}
+                className="p-2 text-2xl hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* 컨트롤 버튼 */}
         <div className="space-y-3">
           <Button 
             onClick={handleEndSession}
             variant="outline"
             className="w-full"
+            disabled={!canExit}
           >
-            <Clock className="w-4 h-4 mr-2" />
-            조기 종료하기
+            {canExit ? (
+              <>
+                <Clock className="w-4 h-4 mr-2" />
+                조기 종료하기
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4 mr-2" />
+                {Math.ceil((exitLockTime - (25 * 60 - timeLeft)) / 60)}분 후 퇴장 가능
+              </>
+            )}
           </Button>
           <Button 
             onClick={handleEmergencyExit}
