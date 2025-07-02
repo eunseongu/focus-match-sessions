@@ -8,8 +8,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Clock, Timer, Target } from 'lucide-react';
 
 const SessionRequest = () => {
-  const [sessionTime, setSessionTime] = useState(10); // 기본값 10분으로 변경
-  const [additionalSeconds, setAdditionalSeconds] = useState(20); // 추가 20초
+  const [sessionTime, setSessionTime] = useState(10); // 기본값 10분
+  const [additionalSeconds, setAdditionalSeconds] = useState(0); // 기본 추가 초는 0초
   const [selectedTag, setSelectedTag] = useState('');
   const [goal, setGoal] = useState('');
   const navigate = useNavigate();
@@ -19,6 +19,20 @@ const SessionRequest = () => {
   const tags = [
     '공부', '업무', '독서', '프로젝트', '운동', '명상'
   ];
+
+  // 미리 정의된 시간 옵션들
+  const timeOptions = [
+    { minutes: 10, seconds: 0, label: '10분' },
+    { minutes: 15, seconds: 0, label: '15분' },
+    { minutes: 30, seconds: 0, label: '30분' },
+    { minutes: 45, seconds: 0, label: '45분' },
+    { minutes: 60, seconds: 0, label: '1시간' }
+  ];
+
+  const handleTimeOptionClick = (minutes: number, seconds: number) => {
+    setSessionTime(minutes);
+    setAdditionalSeconds(seconds);
+  };
 
   const handleRequestSession = () => {
     if (!selectedTag || !goal.trim()) {
@@ -53,10 +67,32 @@ const SessionRequest = () => {
         </div>
 
         <div className="space-y-6">
-          {/* 시간 선택 */}
+          {/* 빠른 시간 선택 */}
+          <div>
+            <Label className="text-sm font-medium text-gray-700 mb-3 block">
+              집중 시간 선택
+            </Label>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {timeOptions.map(({ minutes, seconds, label }) => (
+                <button
+                  key={`${minutes}-${seconds}`}
+                  onClick={() => handleTimeOptionClick(minutes, seconds)}
+                  className={`p-2 text-sm rounded-lg border-2 transition-all ${
+                    sessionTime === minutes && additionalSeconds === seconds
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 사용자 정의 시간 */}
           <div>
             <Label htmlFor="session-time" className="text-sm font-medium text-gray-700 mb-3 block">
-              세션 시간 (기본: 10분 20초)
+              또는 직접 입력
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center space-x-2">

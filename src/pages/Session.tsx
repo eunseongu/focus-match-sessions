@@ -14,9 +14,12 @@ const Session = () => {
   const [canExit, setCanExit] = useState(false);
   const [motivationMessage, setMotivationMessage] = useState('');
   const [partnerEmoji, setPartnerEmoji] = useState('');
+  const [sentEmoji, setSentEmoji] = useState('');
+  const [emojiCooldown, setEmojiCooldown] = useState(false);
   
   const navigate = useNavigate();
-  const exitLockTime = 3; // 3초로 변경
+  const userSessionTime = sessionData.sessionTime || 600; // 사용자가 설정한 실제 시간
+  const halfTime = Math.floor(userSessionTime / 2); // 절반 시간 계산
   const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
   const isBot = sessionData.isBot || false;
   
@@ -39,8 +42,9 @@ const Session = () => {
           return 0;
         }
         
-        // 퇴장 잠금 시간 해제 (3초 후)
-        if (prev === (600 - exitLockTime)) {
+        // 퇴장 잠금 시간 해제 - 사용자 설정 시간의 절반이 지났을 때
+        const elapsedTime = 600 - prev; // 경과 시간
+        if (elapsedTime >= halfTime && !canExit) {
           setCanExit(true);
         }
         
@@ -49,7 +53,7 @@ const Session = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isRunning, timeLeft]);
+  }, [isRunning, timeLeft, halfTime, canExit]);
 
   // 동기 메시지 카드
   useEffect(() => {
@@ -93,12 +97,42 @@ const Session = () => {
   };
 
   const handleSendEmoji = (emoji: string) => {
+    if (emojiCooldown) return;
+    
     console.log('이모지 전송:', emoji);
+    setSentEmoji(emoji);
+    setEmojiCooldown(true);
+    
+    // 이모지 애니메이션 제거
+    setTimeout(() => {
+      setSentEmoji('');
+    }, 2000);
+    
+    // 쿨다운 해제
+    setTimeout(() => {
+      setEmojiCooldown(false);
+    }, 5000);
+    
+    // 봇인 경우 자동 응답
+    if (isBot && Math.random() > 0.3) {
+      setTimeout(() => {
+        const responseEmojis = ['👍', '🔥', '💪', '❤️'];
+        const randomResponse = responseEmojis[Math.floor(Math.random() * responseEmojis.length)];
+        setPartnerEmoji(randomResponse);
+        
+        setTimeout(() => {
+          setPartnerEmoji('');
+        }, 3000);
+      }, 1000 + Math.random() * 2000);
+    }
   };
 
   const handleEndSession = () => {
     if (!canExit) {
-      alert('3초가 지나야 퇴장할 수 있습니다.');
+      const elapsedTime = 600 - timeLeft;
+      const remainingTime = halfTime - elapsedTime;
+      const remainingMinutes = Math.ceil(remainingTime / 60);
+      alert(`집중 시간의 절반이 지나야 퇴장할 수 있습니다. (약 ${remainingMinutes}분 더 필요)`);
       return;
     }
     navigate('/auth-exit', { state: sessionData });
@@ -108,6 +142,12 @@ const Session = () => {
     if (confirm('정말로 세션을 중단하시겠습니까? 이는 실패로 기록됩니다.')) {
       navigate('/session-mode');
     }
+  };
+
+  const getRemainingTimeForExit = () => {
+    const elapsedTime = 600 - timeLeft;
+    const remainingTime = halfTime - elapsedTime;
+    return Math.max(0, Math.ceil(remainingTime / 60));
   };
 
   if (timeLeft === 0) {
@@ -129,7 +169,14 @@ const Session = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative overflow-hidden">
+        {/* 전송한 이모지 애니메이션 */}
+        {sentEmoji && (
+          <div className="absolute top-4 right-4 text-4xl animate-bounce z-10">
+            {sentEmoji}
+          </div>
+        )}
+        
         {/* 동기 메시지 카드 */}
         {motivationMessage && (
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg mb-6 text-center animate-fade-in">
@@ -164,14 +211,14 @@ const Session = () => {
         </div>
 
         {/* 파트너/봇 상태 */}
-        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg mb-6 relative">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700 flex items-center">
               {isBot && <Bot className="w-4 h-4 mr-1 text-purple-600" />}
               {isBot ? '도우미' : '파트너'} 진행률
             </span>
             {partnerEmoji && (
-              <span className="text-2xl animate-bounce">{partnerEmoji}</span>
+              <span className="text-3xl animate-pulse absolute -top-2 right-4">{partnerEmoji}</span>
             )}
             <span className="text-sm text-gray-600">{partnerProgress}%</span>
           </div>
@@ -187,13 +234,19 @@ const Session = () => {
         <div className="mb-6">
           <p className="text-sm font-medium text-gray-700 mb-3 text-center">
             {isBot ? '도우미에게' : '파트너에게'} 응원 보내기
+            {emojiCooldown && <span className="text-xs text-gray-500 ml-2">(5초 후 재전송 가능)</span>}
           </p>
           <div className="grid grid-cols-6 gap-2">
             {emojis.map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => handleSendEmoji(emoji)}
-                className="p-2 text-2xl hover:bg-gray-100 rounded-lg transition-colors"
+                disabled={emojiCooldown}
+                className={`p-2 text-2xl rounded-lg transition-all ${
+                  emojiCooldown 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:bg-gray-100 hover:scale-110 active:scale-95'
+                }`}
               >
                 {emoji}
               </button>
@@ -217,7 +270,7 @@ const Session = () => {
             ) : (
               <>
                 <Lock className="w-4 h-4 mr-2" />
-                3초 후 퇴장 가능
+                {getRemainingTimeForExit()}분 더 집중해야 퇴장 가능
               </>
             )}
           </Button>
