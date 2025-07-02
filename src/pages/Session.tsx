@@ -1,13 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Clock, Lock, Heart, ThumbsUp, Coffee, Zap, Bot } from 'lucide-react';
+import { Timer, Clock, Lock, AlertTriangle, Bot } from 'lucide-react';
 
 const Session = () => {
   const location = useLocation();
   const sessionData = location.state || {};
-  // 시뮬레이션을 위해 항상 10분(600초)으로 고정
   const [timeLeft, setTimeLeft] = useState(600); // 10분 고정
   const [isRunning, setIsRunning] = useState(true);
   const [partnerProgress] = useState(85);
@@ -18,10 +16,9 @@ const Session = () => {
   const [emojiCooldown, setEmojiCooldown] = useState(false);
   
   const navigate = useNavigate();
-  const userSessionTime = sessionData.sessionTime || 600; // 사용자가 설정한 실제 시간
-  const halfTime = Math.floor(userSessionTime / 2); // 절반 시간 계산
-  const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
+  const userSessionTime = sessionData.sessionTime || 600;
   const isBot = sessionData.isBot || false;
+  const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
   
   const motivationMessages = [
     '지금 이 순간, 집중하고 있는 자신이 자랑스러워요!',
@@ -42,9 +39,9 @@ const Session = () => {
           return 0;
         }
         
-        // 퇴장 잠금 시간 해제 - 사용자 설정 시간의 절반이 지났을 때
-        const elapsedTime = 600 - prev; // 경과 시간
-        if (elapsedTime >= halfTime && !canExit) {
+        // 3초 후 퇴장 가능
+        const elapsedTime = 600 - prev;
+        if (elapsedTime >= 3 && !canExit) {
           setCanExit(true);
         }
         
@@ -53,7 +50,7 @@ const Session = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isRunning, timeLeft, halfTime, canExit]);
+  }, [isRunning, timeLeft, canExit]);
 
   // 동기 메시지 카드
   useEffect(() => {
@@ -92,7 +89,7 @@ const Session = () => {
   };
 
   const getProgress = () => {
-    const totalTime = 600; // 10분 고정
+    const totalTime = 600;
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
@@ -103,17 +100,14 @@ const Session = () => {
     setSentEmoji(emoji);
     setEmojiCooldown(true);
     
-    // 이모지 애니메이션 제거
     setTimeout(() => {
       setSentEmoji('');
     }, 2000);
     
-    // 쿨다운 해제
     setTimeout(() => {
       setEmojiCooldown(false);
     }, 5000);
     
-    // 봇인 경우 자동 응답
     if (isBot && Math.random() > 0.3) {
       setTimeout(() => {
         const responseEmojis = ['👍', '🔥', '💪', '❤️'];
@@ -129,25 +123,16 @@ const Session = () => {
 
   const handleEndSession = () => {
     if (!canExit) {
-      const elapsedTime = 600 - timeLeft;
-      const remainingTime = halfTime - elapsedTime;
-      const remainingMinutes = Math.ceil(remainingTime / 60);
-      alert(`집중 시간의 절반이 지나야 퇴장할 수 있습니다. (약 ${remainingMinutes}분 더 필요)`);
+      alert('아직 퇴장할 수 없습니다. 조금 더 집중해주세요.');
       return;
     }
     navigate('/auth-exit', { state: sessionData });
   };
 
-  const handleEmergencyExit = () => {
+  const handleForceExit = () => {
     if (confirm('정말로 세션을 중단하시겠습니까? 이는 실패로 기록됩니다.')) {
       navigate('/session-mode');
     }
-  };
-
-  const getRemainingTimeForExit = () => {
-    const elapsedTime = 600 - timeLeft;
-    const remainingTime = halfTime - elapsedTime;
-    return Math.max(0, Math.ceil(remainingTime / 60));
   };
 
   if (timeLeft === 0) {
@@ -270,17 +255,18 @@ const Session = () => {
             ) : (
               <>
                 <Lock className="w-4 h-4 mr-2" />
-                {getRemainingTimeForExit()}분 더 집중해야 퇴장 가능
+                아직 퇴장할 수 없습니다
               </>
             )}
           </Button>
           <Button 
-            onClick={handleEmergencyExit}
+            onClick={handleForceExit}
             variant="destructive"
             className="w-full"
             size="sm"
           >
-            긴급 중단
+            <AlertTriangle className="w-4 h-4 mr-2" />
+            중단하기 (프로토타입용)
           </Button>
         </div>
       </div>

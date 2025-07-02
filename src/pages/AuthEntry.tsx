@@ -1,36 +1,18 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Target } from 'lucide-react';
 
 const AuthEntry = () => {
-  const [isStarting, setIsStarting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const sessionData = location.state || {};
 
   const handleStartSession = () => {
-    setIsStarting(true);
-    setTimeout(() => {
-      navigate('/session', { state: sessionData });
-    }, 1500);
+    navigate('/session', { state: sessionData });
   };
-
-  if (isStarting) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
-          <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Target className="w-8 h-8 text-green-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-green-600 mb-2">집중 시작!</h1>
-          <p className="text-gray-600">세션이 곧 시작됩니다...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -59,7 +41,7 @@ const AuthEntry = () => {
             <div className="text-center">
               <p className="text-sm text-blue-700 mb-1">집중 시간</p>
               <p className="text-lg font-bold text-blue-800">
-                {Math.floor((sessionData.sessionTime || 600) / 60)}분 {((sessionData.sessionTime || 600) % 60)}초
+                {Math.floor((sessionData.sessionTime || 600) / 60)}분
               </p>
               {sessionData.selectedTag && (
                 <p className="text-sm text-blue-600 mt-1">• {sessionData.selectedTag}</p>
