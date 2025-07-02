@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Clock, Lock, AlertTriangle, Bot } from 'lucide-react';
+import { Timer, Clock, Lock, AlertTriangle, Bot, Zap } from 'lucide-react';
 
 const Session = () => {
   const location = useLocation();
@@ -122,8 +123,11 @@ const Session = () => {
   };
 
   const handleEndSession = () => {
-    if (!canExit) {
-      alert('아직 퇴장할 수 없습니다. 조금 더 집중해주세요.');
+    const halfTime = userSessionTime / 2;
+    const elapsedTime = 600 - timeLeft;
+    
+    if (elapsedTime < halfTime) {
+      alert(`아직 퇴장할 수 없습니다. ${Math.ceil((halfTime - elapsedTime) / 60)}분 더 집중해주세요.`);
       return;
     }
     navigate('/auth-exit', { state: sessionData });
@@ -132,6 +136,12 @@ const Session = () => {
   const handleForceExit = () => {
     if (confirm('정말로 세션을 중단하시겠습니까? 이는 실패로 기록됩니다.')) {
       navigate('/session-mode');
+    }
+  };
+
+  const handlePrototypeExit = () => {
+    if (confirm('프로토타입용 성공 흐름으로 이동하시겠습니까?')) {
+      navigate('/auth-exit', { state: sessionData });
     }
   };
 
@@ -245,20 +255,21 @@ const Session = () => {
             onClick={handleEndSession}
             variant="outline"
             className="w-full"
-            disabled={!canExit}
           >
-            {canExit ? (
-              <>
-                <Clock className="w-4 h-4 mr-2" />
-                조기 종료하기
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 mr-2" />
-                아직 퇴장할 수 없습니다
-              </>
-            )}
+            <Clock className="w-4 h-4 mr-2" />
+            조기 종료하기
           </Button>
+          
+          <Button 
+            onClick={handlePrototypeExit}
+            variant="secondary"
+            className="w-full"
+            size="sm"
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            성공 완료하기 (프로토타입용)
+          </Button>
+          
           <Button 
             onClick={handleForceExit}
             variant="destructive"
@@ -266,7 +277,7 @@ const Session = () => {
             size="sm"
           >
             <AlertTriangle className="w-4 h-4 mr-2" />
-            중단하기 (프로토타입용)
+            중단하기
           </Button>
         </div>
       </div>
