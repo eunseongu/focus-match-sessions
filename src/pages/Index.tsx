@@ -10,9 +10,9 @@ const Index = () => {
 
   // 시뮬레이션용 데이터
   const recentBadge = {
-    character: '🐤',
-    name: '초등학생',
-    theme: '책 읽는 병아리'
+    character: '👶',
+    name: '신생아',
+    theme: '첫 걸음마 아기'
   };
 
   const todayMission = {
@@ -21,7 +21,7 @@ const Index = () => {
   };
 
   const badgeStats = {
-    total: 9,
+    total: 11, // 어린이 뱃지와 히든 뱃지 추가로 증가
     unlocked: 2
   };
 
@@ -53,6 +53,26 @@ const Index = () => {
 
       {/* 메인 컨텐츠 */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">
+        {/* 세션 시작 카드 - 최상단 배치 */}
+        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl p-8 shadow-xl text-white text-center">
+          <div className="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Timer className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold mb-4">🚀 새로운 집중 세션 시작</h2>
+          <p className="text-purple-100 mb-6 text-lg">
+            파트너와 함께 깊은 집중을 경험하고<br />
+            새로운 뱃지를 획득해보세요
+          </p>
+          <Button 
+            onClick={() => navigate('/session-mode')}
+            size="lg"
+            className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-4 font-semibold"
+          >
+            <Timer className="w-5 h-5 mr-2" />
+            집중 세션 시작하기
+          </Button>
+        </div>
+
         {/* 오늘의 집중 미션 */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
           <div className="text-center">
@@ -83,21 +103,17 @@ const Index = () => {
           </div>
         </div>
 
-        {/* 나의 뱃지함 바로가기 */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
+        {/* 나의 뱃지함 바로가기 - 카드 전체 클릭 가능 */}
+        <button
+          onClick={() => navigate('/stats')}
+          className="w-full bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30 hover:bg-white/95 transition-colors text-left"
+        >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-800 flex items-center">
               <Gift className="w-5 h-5 mr-2 text-purple-500" />
               📦 나의 뱃지함
             </h2>
-            <Button 
-              onClick={() => navigate('/stats')}
-              variant="outline"
-              size="sm"
-              className="border-purple-200 hover:bg-purple-50"
-            >
-              전체 보기
-            </Button>
+            <div className="text-sm text-purple-600 font-medium">전체 보기 →</div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -122,27 +138,7 @@ const Index = () => {
               ></div>
             </div>
           </div>
-        </div>
-
-        {/* 세션 시작 카드 */}
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl p-8 shadow-xl text-white text-center">
-          <div className="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Timer className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold mb-4">🚀 새로운 집중 세션 시작</h2>
-          <p className="text-purple-100 mb-6 text-lg">
-            파트너와 함께 깊은 집중을 경험하고<br />
-            새로운 뱃지를 획득해보세요
-          </p>
-          <Button 
-            onClick={() => navigate('/session-mode')}
-            size="lg"
-            className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-4 font-semibold"
-          >
-            <Timer className="w-5 h-5 mr-2" />
-            집중 세션 시작하기
-          </Button>
-        </div>
+        </button>
 
         {/* 동물 친구들 섹션 */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
@@ -150,11 +146,12 @@ const Index = () => {
             🐾 집중 동물 친구들과 함께해요
           </h2>
           <div className="flex justify-center space-x-4 text-4xl">
-            <span className="animate-bounce" style={{ animationDelay: '0s' }}>🐤</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🐰</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🐻</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>🦊</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🐯</span>
+            <span className="animate-bounce" style={{ animationDelay: '0s' }}>🐣</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🐤</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🐰</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>🐻</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🦊</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.5s' }}>🐯</span>
           </div>
           <p className="text-center text-gray-600 mt-4">
             각 동물마다 특별한 집중 시간이 있어요. 어떤 친구와 만날까요?

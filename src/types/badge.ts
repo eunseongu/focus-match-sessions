@@ -7,7 +7,7 @@ export interface Badge {
   theme: string;
   type: 'role' | 'special';
   condition: {
-    type: 'time' | 'timeOfDay' | 'frequency' | 'special';
+    type: 'time' | 'timeOfDay' | 'frequency' | 'special' | 'firstSession';
     value: number | string;
     role?: string;
   };
@@ -16,6 +16,16 @@ export interface Badge {
 }
 
 export const ROLE_BADGES: Badge[] = [
+  {
+    id: 'child',
+    name: '어린이',
+    description: '집중의 첫걸음을 내딛은 당신!',
+    character: '🐣',
+    theme: '알에서 나온 병아리',
+    type: 'role',
+    condition: { type: 'time', value: 20, role: '어린이' },
+    isUnlocked: false
+  },
   {
     id: 'elementary',
     name: '초등학생',
@@ -70,6 +80,16 @@ export const ROLE_BADGES: Badge[] = [
 
 export const SPECIAL_BADGES: Badge[] = [
   {
+    id: 'newborn',
+    name: '신생아',
+    description: '첫 세션을 성공한 당신을 환영합니다!',
+    character: '👶',
+    theme: '첫 걸음마 아기',
+    type: 'special',
+    condition: { type: 'firstSession', value: 1 },
+    isUnlocked: false
+  },
+  {
     id: 'morning-owl',
     name: '아침 올빼미',
     description: '누구보다 빠른 하루 시작!',
@@ -107,6 +127,16 @@ export const SPECIAL_BADGES: Badge[] = [
     theme: '무지개 유니콘',
     type: 'special',
     condition: { type: 'time', value: 90 },
+    isUnlocked: false
+  },
+  {
+    id: 'hidden-mystery',
+    name: '???',
+    description: '숨겨진 조건을 만족하면 획득할 수 있는 신비한 뱃지입니다.',
+    character: '❓',
+    theme: '신비한 존재',
+    type: 'special',
+    condition: { type: 'special', value: 'hidden' },
     isUnlocked: false
   }
 ];
