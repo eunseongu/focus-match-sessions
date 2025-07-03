@@ -10,7 +10,8 @@ import { CheckCircle, Trophy, Star, Gift, Zap } from 'lucide-react';
 const AuthExit = () => {
   const [goal, setGoal] = useState('');
   const [reflection, setReflection] = useState('');
-  const [rating, setRating] = useState(0);
+  const [focusRating, setFocusRating] = useState(0);
+  const [achievementRating, setAchievementRating] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const sessionData = location.state || {};
@@ -96,8 +97,13 @@ const AuthExit = () => {
       return;
     }
 
-    if (rating === 0) {
+    if (focusRating === 0) {
       alert('집중도를 평가해주세요.');
+      return;
+    }
+
+    if (achievementRating === 0) {
+      alert('목표달성도를 평가해주세요.');
       return;
     }
 
@@ -106,7 +112,8 @@ const AuthExit = () => {
       state: { 
         sessionCompleted: true, 
         earnedBadges,
-        rating,
+        focusRating,
+        achievementRating,
         reflection 
       } 
     });
@@ -116,11 +123,11 @@ const AuthExit = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">세션 완료!</h1>
-          <p className="text-gray-600">목표 달성을 인증해주세요</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">집중 완료!</h1>
+          <p className="text-gray-600">수고하셨습니다</p>
         </div>
 
         <div className="space-y-6">
@@ -140,35 +147,56 @@ const AuthExit = () => {
           {/* 집중도 평가 */}
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-3 block">
-              집중도를 평가해주세요 *
+              집중도는 어떠셨나요? *
             </Label>
             <div className="flex justify-center space-x-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
-                  className={`text-3xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'} hover:text-yellow-400 transition-colors`}
+                  onClick={() => setFocusRating(star)}
+                  className={`text-3xl ${star <= focusRating ? 'text-yellow-400' : 'text-gray-300'} hover:text-yellow-400 transition-colors`}
                 >
                   ⭐
                 </button>
               ))}
             </div>
-            <p className="text-center text-sm text-gray-500 mt-2">
-              {rating === 0 ? '평가를 선택해주세요' : `${rating}/5 - ${rating >= 4 ? '훌륭해요!' : rating >= 3 ? '좋아요!' : '다음엔 더 잘할 수 있어요!'}`}
-            </p>
+          </div>
+
+          {/* 목표달성도 평가 */}
+          <div>
+            <Label className="text-sm font-medium text-gray-700 mb-3 block">
+              목표 달성도는 어떠셨나요? *
+            </Label>
+            <div className="flex justify-center space-x-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setAchievementRating(star)}
+                  className={`text-3xl ${star <= achievementRating ? 'text-yellow-400' : 'text-gray-300'} hover:text-yellow-400 transition-colors`}
+                >
+                  ⭐
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 소감 입력 (선택사항) */}
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-2 block">
-              소감이나 느낀 점 (선택사항)
+              💡 집중 팁
             </Label>
-            <Textarea
-              value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
-              placeholder="집중하면서 느낀 점이나 다음에 개선하고 싶은 점을 적어보세요"
-              className="w-full h-20 resize-none"
-            />
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+              <p className="text-sm text-blue-700">다른 사람들과 함께 집중해보세요. 협력의 힘은 생각보다 강력해요 💪</p>
+            </div>
+            
+            <Label className="text-sm font-medium text-gray-700 mb-2 block">
+              소감 작성하기 (선택사항)
+            </Label>
+            <div className="border-2 border-gray-200 rounded-lg p-3">
+              <select className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 mb-3">
+                <option>소감 작성하기 (선택사항)</option>
+              </select>
+            </div>
           </div>
 
           {/* 획득한 뱃지 표시 */}
@@ -192,17 +220,7 @@ const AuthExit = () => {
             </div>
           )}
 
-          {/* 학습 팁 */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center mb-2">
-              <Star className="w-4 h-4 text-blue-600 mr-2" />
-              <h3 className="font-medium text-blue-800">💡 집중 팁</h3>
-            </div>
-            <p className="text-sm text-blue-700">{randomTip}</p>
-          </div>
-
-          <Button onClick={handleSubmit} className="w-full py-3 text-base">
-            <Gift className="w-4 h-4 mr-2" />
+          <Button onClick={handleSubmit} className="w-full py-3 text-base bg-gray-500 hover:bg-gray-600">
             완료하기
           </Button>
         </div>

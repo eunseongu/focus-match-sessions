@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -417,32 +416,41 @@ const Session = () => {
           </div>
         </div>
 
-        {/* 채팅 기능 - 뽀모도로 휴식 시간에만 */}
+        {/* 채팅 기능 - 뽀모도로 모드에서 파트너 세션일 때만 표시 */}
         {isPomodoroMode && isPartnerSession && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-gray-700">💬 파트너 채팅</p>
+              <div className="flex items-center">
+                <MessageSquare className="w-4 h-4 text-gray-600 mr-2" />
+                <p className="text-sm font-medium text-gray-700">파트너 채팅</p>
+              </div>
               <div className="flex items-center space-x-2">
-                {chatEnabled ? (
-                  <span className="text-xs text-green-600">활성화</span>
-                ) : (
-                  <span className="text-xs text-gray-400">휴식 시간에만 가능</span>
-                )}
+                <div className={`text-xs px-2 py-1 rounded-full ${
+                  chatEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {chatEnabled ? '활성화' : '휴식 시간에만 가능'}
+                </div>
                 <Button
                   onClick={() => setChatEnabled(!chatEnabled)}
                   size="sm"
                   variant="outline"
-                  className="text-xs"
+                  className="text-xs h-6 px-2"
                 >
-                  테스트용 활성화
+                  테스트
                 </Button>
               </div>
             </div>
             
-            {chatEnabled && (
-              <div className="border-2 border-gray-200 rounded-lg p-3">
-                <div className="h-24 overflow-y-auto mb-3 space-y-2">
-                  {chatMessages.map((msg) => (
+            <div className={`border-2 rounded-lg p-3 transition-all ${
+              chatEnabled ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
+            }`}>
+              <div className="h-24 overflow-y-auto mb-3 space-y-2">
+                {chatMessages.length === 0 ? (
+                  <div className="text-center text-gray-400 text-sm py-4">
+                    {chatEnabled ? '메시지를 입력해보세요' : '휴식 시간에 채팅해보세요'}
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => (
                     <div key={msg.id} className={`text-sm ${
                       msg.sender === '나' ? 'text-right' : 'text-left'
                     }`}>
@@ -454,27 +462,28 @@ const Session = () => {
                         {msg.message}
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  <Input
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    placeholder={chatEnabled ? "메시지 입력..." : "휴식 시간에 활성화됩니다"}
-                    disabled={!chatEnabled}
-                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                    className="text-sm"
-                  />
-                  <Button
-                    onClick={sendMessage}
-                    size="sm"
-                    disabled={!chatEnabled || !chatMessage.trim()}
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
+                  ))
+                )}
               </div>
-            )}
+              <div className="flex space-x-2">
+                <Input
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder={chatEnabled ? "메시지 입력..." : "휴식 시간에 활성화됩니다"}
+                  disabled={!chatEnabled}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  className="text-sm"
+                />
+                <Button
+                  onClick={sendMessage}
+                  size="sm"
+                  disabled={!chatEnabled || !chatMessage.trim()}
+                  className="px-3"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
