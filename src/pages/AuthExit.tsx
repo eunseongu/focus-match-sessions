@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -54,9 +53,11 @@ const AuthExit = () => {
         }
       }
 
-      // 역할별 뱃지들
+      // 역할별 뱃지들 - 시간 조건만 체크
       const roleBadge = ROLE_BADGES.find(badge => {
-        return sessionTimeMinutes >= badge.condition.value;
+        return badge.condition.type === 'time' && 
+               typeof badge.condition.value === 'number' && 
+               sessionTimeMinutes >= badge.condition.value;
       });
       
       if (roleBadge) {
