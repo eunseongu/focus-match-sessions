@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Clock, Lock, AlertTriangle, Bot, Zap, Volume2, VolumeX } from 'lucide-react';
+import { Timer, Clock, Lock, AlertTriangle, Bot, Zap, Volume2, VolumeX, Users } from 'lucide-react';
 
 const Session = () => {
   const location = useLocation();
@@ -14,6 +13,7 @@ const Session = () => {
   const [motivationMessage, setMotivationMessage] = useState('');
   const [audioType, setAudioType] = useState<string | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [partnerAudio, setPartnerAudio] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const userSessionTime = sessionData.sessionTime || 600;
@@ -34,6 +34,14 @@ const Session = () => {
     { type: 'rain', name: '빗소리' }
   ];
 
+  // 파트너가 듣고 있는 소리 시뮬레이션
+  useEffect(() => {
+    if (!isBot && Math.random() > 0.7) {
+      const randomAudio = audioOptions[Math.floor(Math.random() * audioOptions.length)];
+      setPartnerAudio(randomAudio.type);
+    }
+  }, [isBot]);
+
   useEffect(() => {
     if (!isRunning || timeLeft <= 0) return;
 
@@ -42,24 +50,28 @@ const Session = () => {
         if (prev <= 1) {
           setIsRunning(false);
           setCanExit(true);
-          // 브라우저 탭 타이틀을 완료로 변경
-          document.title = '🎉 세션 완료! - FocusMatch';
+          document.title = '🎉 세션 완료!';
           return 0;
         }
         
-        // 3초 후 퇴장 가능
         const elapsedTime = 600 - prev;
         if (elapsedTime >= 3 && !canExit) {
           setCanExit(true);
         }
         
-        // 브라우저 탭 타이틀 업데이트
+        // 브라우저 탭 타이틀 업데이트 - 새로운 형식
         const minutes = Math.floor(prev / 60);
         const seconds = prev % 60;
         const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         const progress = ((600 - prev) / 600) * 100;
-        const progressBar = '▣'.repeat(Math.floor(progress / 20)) + '▢'.repeat(5 - Math.floor(progress / 20));
-        document.title = `${timeString} ${progressBar} ${Math.round(progress)}% - FocusMatch`;
+        
+        // 진행도 바 생성 (총 6개 블록)
+        const totalBlocks = 6;
+        const filledBlocks = Math.floor((progress / 100) * totalBlocks);
+        const progressBar = '▣'.repeat(filledBlocks) + '▢'.repeat(totalBlocks - filledBlocks);
+        const dots = '⠂⠂⠂';
+        
+        document.title = `${timeString} ${dots}${progressBar} ${Math.round(progress)}%`;
         
         return prev - 1;
       });
@@ -122,6 +134,12 @@ const Session = () => {
     }
   };
 
+  const joinPartnerAudio = (type: string) => {
+    setAudioType(type);
+    setIsAudioPlaying(true);
+    console.log(`파트너와 함께 ${type} 오디오 듣기 시작`);
+  };
+
   const handleEndSession = () => {
     const halfTime = userSessionTime / 2;
     const elapsedTime = 600 - timeLeft;
@@ -178,7 +196,7 @@ const Session = () => {
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">집중 세션 진행 중</h1>
           <p className="text-gray-600">
-            {isBot ? '도우미와' : '파트너와'} 함께 집중하고 있습니다
+            {isBot ?' 도우미와' : '파트너와'} 함께 집중하고 있습니다
           </p>
         </div>
 
@@ -220,6 +238,30 @@ const Session = () => {
             </div>
           </div>
         </div>
+
+        {/* 파트너가 듣고 있는 음악 표시 */}
+        {partnerAudio && !isBot && (
+          <div className="mb-4">
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Users className="w-4 h-4 text-blue-600 mr-2" />
+                  <span className="text-sm text-blue-700">
+                    파트너가 {audioOptions.find(a => a.type === partnerAudio)?.name} 듣는 중
+                  </span>
+                </div>
+                <Button
+                  onClick={() => joinPartnerAudio(partnerAudio)}
+                  size="sm"
+                  variant="outline"
+                  className="text-xs border-blue-300 hover:bg-blue-50"
+                >
+                  같이 듣기
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 소리 공유 기능 */}
         <div className="mb-6">
