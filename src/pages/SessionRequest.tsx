@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Timer, Target, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
 
 const SessionRequest = () => {
   const [sessionTime, setSessionTime] = useState(10); // 기본값 10분
@@ -89,6 +89,7 @@ const SessionRequest = () => {
       case 'solo': return '혼자 집중하기';
       case 'remote': return '원격 매칭';
       case 'qr': return 'QR 매칭';
+      case 'pomodoro': return '뽀모도로 집중법';
       default: return '자동 매칭';
     }
   };
@@ -202,6 +203,15 @@ const SessionRequest = () => {
             {sessionMode.mode === 'solo' ? '혼자 집중 시작하기' : '매칭 시작하기'}
           </Button>
         </div>
+
+        <Button 
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          className="w-full mt-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          뒤로가기
+        </Button>
       </div>
     </div>
   );

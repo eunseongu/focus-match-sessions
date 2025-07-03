@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import SessionMode from '@/pages/SessionMode';
+import PomodoroMode from '@/pages/PomodoroMode';
 import SessionRequest from '@/pages/SessionRequest';
 import Matching from '@/pages/Matching';
 import Session from '@/pages/Session';
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/session-mode" element={<SessionMode />} />
+        <Route path="/pomodoro-mode" element={<PomodoroMode />} />
         <Route path="/session-request" element={<SessionRequest />} />
         <Route path="/matching" element={<Matching />} />
         <Route path="/session" element={<Session />} />

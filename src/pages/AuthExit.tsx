@@ -1,256 +1,223 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle, Star, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react';
-import { ROLE_BADGES, SPECIAL_BADGES, Badge as BadgeType } from '@/types/badge';
+import { CheckCircle, Trophy, Star, Target, ArrowLeft } from 'lucide-react';
 
 const AuthExit = () => {
+  const [focusLevel, setFocusLevel] = useState(3);
+  const [goalAchievement, setGoalAchievement] = useState(3);
+  const [reflection, setReflection] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const sessionData = location.state || {};
-  
-  const [focusRating, setFocusRating] = useState(0);
-  const [goalAchievement, setGoalAchievement] = useState(0);
-  const [reflection, setReflection] = useState('');
-  const [showReflectionInput, setShowReflectionInput] = useState(false);
-  const [newBadge, setNewBadge] = useState<BadgeType | null>(null);
-  const [learningHint, setLearningHint] = useState('');
 
-  const learningHints = [
-    "다양한 시간대에 집중해보세요. 아침 일찍 시도해보면 특별한 뱃지를 얻을 수 있어요! 🌅",
-    "한 파트너와 루틴을 만들어보세요. 연속으로 함께하면 좋은 일이 생길지도... 🤝",
-    "주말에도 집중해보세요. 쉬는 날의 집중은 특별한 의미가 있답니다 🎯",
-    "장시간 집중에 도전해보세요. 90분 이상 집중하면 전설적인 무언가를... 🦄",
-    "매일 조금씩이라도 집중해보세요. 연속 달성에는 비밀이 숨어있어요 🔥",
-    "다른 사람들과 함께 집중해보세요. 협력의 힘은 생각보다 강력해요 💪"
+  // 뱃지 시스템 - 신생아 뱃지를 동물 이모지로 변경
+  const badges = [
+    {
+      id: 'first_session',
+      character: '🐣',
+      name: '첫 걸음마',
+      theme: '첫 집중 세션 완료',
+      condition: { type: 'session_count', value: 1 },
+      unlocked: true
+    },
+    {
+      id: 'early_bird',
+      character: '🐤',
+      name: '새벽 집중러',
+      theme: '오전 6-8시 집중',
+      condition: { type: 'time_range', value: '06:00-08:00' },
+      unlocked: false
+    },
+    {
+      id: 'focus_master',
+      character: '🦊',
+      name: '집중 마스터',
+      theme: '연속 성공 세션',
+      condition: { type: 'streak', value: 5 },
+      unlocked: false
+    },
+    {
+      id: 'partner_loyal',
+      character: '🐰',
+      name: '단짝 친구',
+      theme: '같은 파트너와 5회',
+      condition: { type: 'partner_sessions', value: 5 },
+      unlocked: false,
+      hidden: true
+    },
+    {
+      id: 'night_owl',
+      character: '🦉',
+      name: '올빼미',
+      theme: '자정 이후 집중',
+      condition: { type: 'time_range', value: '00:00-06:00' },
+      unlocked: false,
+      hidden: true
+    },
+    {
+      id: 'marathon_runner',
+      character: '🐻',
+      name: '집중 마라토너',
+      theme: '2시간 이상 연속',
+      condition: { type: 'session_length', value: 120 },
+      unlocked: false,
+      hidden: true
+    }
   ];
 
-  React.useEffect(() => {
-    // 뱃지 획득 시뮬레이션
-    const checkBadgeEligibility = () => {
-      const sessionTimeMinutes = Math.floor(sessionData.sessionTime / 60);
-      const now = new Date();
-      const hour = now.getHours();
-      
-      // 신생아 뱃지 (첫 세션)
-      const isFirstSession = !localStorage.getItem('focusMatch_hasCompletedSession');
-      if (isFirstSession) {
-        const firstBadge = SPECIAL_BADGES.find(b => b.id === 'newborn');
-        if (firstBadge) {
-          setNewBadge(firstBadge);
-          localStorage.setItem('focusMatch_hasCompletedSession', 'true');
-          return;
+  // 랜덤 팁 시스템
+  const learningTips = [
+    "🌅 다양한 시간대에 집중해보세요. 뇌가 가장 활발한 시간을 찾을 수 있어요!",
+    "👥 한 파트너와 루틴을 만들어보세요. 서로에게 좋은 자극이 됩니다.",
+    "⏰ 짧은 세션부터 시작해서 점차 늘려가세요. 집중력도 근육처럼 키워집니다.",
+    "🎧 배경음을 바꿔가며 집중해보세요. 뇌에게 새로운 자극을 줄 수 있어요.",
+    "📝 구체적인 목표를 설정하면 집중력이 더욱 향상됩니다.",
+    "🌙 일정한 시간에 집중하는 습관을 만들어보세요.",
+    "💪 실패해도 괜찮아요. 꾸준함이 가장 중요합니다!"
+  ];
+
+  const getRandomTip = () => {
+    return learningTips[Math.floor(Math.random() * learningTips.length)];
+  };
+
+  // 뱃지 획득 조건 체크
+  const checkBadgeEligibility = (badge: any) => {
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours();
+    const sessionMinutes = Math.floor((sessionData.sessionTime || 600) / 60);
+
+    switch (badge.condition.type) {
+      case 'session_count':
+        return typeof badge.condition.value === 'number' && 1 >= badge.condition.value;
+      case 'session_length':
+        return typeof badge.condition.value === 'number' && sessionMinutes >= badge.condition.value;
+      case 'time_range':
+        if (badge.condition.value === '06:00-08:00') {
+          return currentHour >= 6 && currentHour < 8;
         }
-      }
-
-      // 히든 뱃지 조건들
-      const isWeekend = now.getDay() === 0 || now.getDay() === 6;
-      if (isWeekend) {
-        const weekendBadge = SPECIAL_BADGES.find(b => b.id === 'weekend-guardian');
-        if (weekendBadge) {
-          setNewBadge(weekendBadge);
-          return;
+        if (badge.condition.value === '00:00-06:00') {
+          return currentHour >= 0 && currentHour < 6;
         }
-      }
-
-      // 아침 올빼미 뱃지 (5-7시)
-      if (hour >= 5 && hour <= 7) {
-        const morningBadge = SPECIAL_BADGES.find(b => b.id === 'morning-owl');
-        if (morningBadge) {
-          setNewBadge(morningBadge);
-          return;
-        }
-      }
-
-      // 전설급 몰입 뱃지 (90분 이상)
-      if (sessionTimeMinutes >= 90) {
-        const unicornBadge = SPECIAL_BADGES.find(b => b.id === 'focus-unicorn');
-        if (unicornBadge) {
-          setNewBadge(unicornBadge);
-          return;
-        }
-      }
-
-      // 어린이 뱃지
-      if (sessionTimeMinutes >= 20) {
-        const childBadge = ROLE_BADGES.find(b => b.id === 'child');
-        if (childBadge) {
-          setNewBadge(childBadge);
-          return;
-        }
-      }
-
-      // 역할별 뱃지들 - 시간 조건만 체크
-      const roleBadge = ROLE_BADGES.find(badge => {
-        return badge.condition.type === 'time' && 
-               typeof badge.condition.value === 'number' && 
-               sessionTimeMinutes >= badge.condition.value;
-      });
-      
-      if (roleBadge) {
-        setNewBadge(roleBadge);
-      }
-    };
-
-    // 학습 힌트 랜덤 선택
-    const randomHint = learningHints[Math.floor(Math.random() * learningHints.length)];
-    setLearningHint(randomHint);
-
-    checkBadgeEligibility();
-  }, [sessionData]);
-
-  const handleComplete = () => {
-    if (focusRating === 0) {
-      alert('집중도를 평가해주세요.');
-      return;
-    }
-    if (goalAchievement === 0) {
-      alert('목표 달성도를 평가해주세요.');
-      return;
-    }
-
-    // 세션 완료 처리
-    console.log('세션 완료:', {
-      focusRating,
-      goalAchievement,
-      reflection,
-      newBadge: newBadge?.name
-    });
-
-    if (newBadge) {
-      // 뱃지 획득 화면 표시
-      navigate('/', { 
-        state: { 
-          newBadge,
-          sessionComplete: true,
-          focusRating,
-          goalAchievement
-        } 
-      });
-    } else {
-      navigate('/');
+        return false;
+      default:
+        return false;
     }
   };
 
-  const renderStars = (rating: number, setRating: (rating: number) => void) => {
-    return (
-      <div className="flex justify-center space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            onClick={() => setRating(star)}
-            className={`text-2xl transition-colors ${
-              star <= rating ? 'text-yellow-400' : 'text-gray-300'
-            }`}
-          >
-            <Star className="w-8 h-8 fill-current" />
-          </button>
-        ))}
-      </div>
-    );
+  const unlockedBadges = badges.filter(badge => 
+    badge.unlocked || checkBadgeEligibility(badge)
+  );
+
+  const handleComplete = () => {
+    const tip = getRandomTip();
+    alert(`세션 완료! 🎉\n\n💡 ${tip}`);
+    navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+          <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trophy className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-green-600 mb-2">집중 완료!</h1>
-          <p className="text-gray-600 mb-2">수고하셨습니다</p>
-          
-          {sessionData.goal && (
-            <div className="bg-green-50 p-3 rounded-lg mt-4">
-              <p className="text-sm text-green-700">
-                목표: {sessionData.goal}
-              </p>
-            </div>
-          )}
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">세션 완료!</h1>
+          <p className="text-gray-600">집중 세션이 종료되었습니다</p>
         </div>
+
+        {/* 새로 획득한 뱃지 표시 */}
+        {unlockedBadges.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">🏅 획득한 뱃지</h3>
+            <div className="space-y-3">
+              {unlockedBadges.map((badge) => (
+                <div key={badge.id} className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg text-center">
+                  <div className="text-4xl mb-2">{badge.character}</div>
+                  <h4 className="font-bold text-gray-800">{badge.name}</h4>
+                  <p className="text-sm text-gray-600">{badge.theme}</p>
+                  {badge.hidden && (
+                    <div className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full mt-2 inline-block">
+                      히든 뱃지!
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* 집중도 평가 */}
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">집중도는 어떠셨나요?</h3>
-            {renderStars(focusRating, setFocusRating)}
-            <p className="text-sm text-gray-500 mt-2">
-              {focusRating > 0 && `${focusRating}점 선택됨`}
-            </p>
+          <div>
+            <Label className="text-sm font-medium text-gray-700 mb-3 block">
+              집중도는 어땠나요?
+            </Label>
+            <div className="flex justify-between space-x-2">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setFocusLevel(level)}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                    focusLevel >= level
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <Star className={`w-6 h-6 mx-auto ${
+                    focusLevel >= level ? 'text-green-500 fill-current' : 'text-gray-300'
+                  }`} />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 목표 달성도 평가 */}
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">목표 달성도는 어떠셨나요?</h3>
-            {renderStars(goalAchievement, setGoalAchievement)}
-            <p className="text-sm text-gray-500 mt-2">
-              {goalAchievement > 0 && `${goalAchievement}점 선택됨`}
-            </p>
-          </div>
-
-          {/* 새 뱃지 미리보기 */}
-          {newBadge && (
-            <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg text-center">
-              <p className="text-sm font-medium text-orange-700 mb-2">🎉 새 뱃지 획득!</p>
-              <div className="text-4xl mb-2">{newBadge.character}</div>
-              <p className="font-semibold text-gray-800">{newBadge.name}</p>
-              <p className="text-sm text-gray-600">{newBadge.description}</p>
-            </div>
-          )}
-
-          {/* 학습 힌트 */}
-          {learningHint && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
-              <div className="flex items-start">
-                <Lightbulb className="w-5 h-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-blue-700 mb-1">💡 집중 팁</p>
-                  <p className="text-sm text-blue-600">{learningHint}</p>
-                </div>
+          {sessionData.goal && (
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                목표 달성도는 어땠나요?
+              </Label>
+              <div className="flex justify-between space-x-2">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setGoalAchievement(level)}
+                    className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                      goalAchievement >= level
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <Target className={`w-6 h-6 mx-auto ${
+                      goalAchievement >= level ? 'text-blue-500 fill-current' : 'text-gray-300'
+                    }`} />
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
-          {/* 소감 입력 - 선택사항 */}
+          {/* 소회 작성 */}
           <div>
-            <button
-              onClick={() => setShowReflectionInput(!showReflectionInput)}
-              className="flex items-center justify-between w-full p-3 text-left border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-all"
-            >
-              <span className="text-sm font-medium text-gray-700">
-                소감 작성하기 (선택사항)
-              </span>
-              {showReflectionInput ? (
-                <ChevronUp className="w-4 h-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              )}
-            </button>
-            
-            {showReflectionInput && (
-              <div className="mt-3">
-                <Textarea
-                  value={reflection}
-                  onChange={(e) => setReflection(e.target.value)}
-                  placeholder="이번 집중 세션은 어떠셨나요? 느낀 점을 자유롭게 작성해보세요."
-                  className="min-h-[100px] resize-none"
-                  maxLength={300}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {reflection.length}/300자
-                </p>
-              </div>
-            )}
+            <Label className="text-sm font-medium text-gray-700 mb-3 block">
+              오늘의 소회 (선택사항)
+            </Label>
+            <Textarea
+              value={reflection}
+              onChange={(e) => setReflection(e.target.value)}
+              placeholder="오늘 집중 세션은 어땠나요? 느낀 점을 자유롭게 적어주세요."
+              className="min-h-[80px] resize-none"
+              maxLength={200}
+            />
+            <p className="text-xs text-gray-500 mt-1">{reflection.length}/200자</p>
           </div>
 
-          <Button 
-            onClick={handleComplete}
-            disabled={focusRating === 0 || goalAchievement === 0}
-            className="w-full py-3 text-base"
-          >
+          <Button onClick={handleComplete} className="w-full py-3 text-base">
+            <CheckCircle className="w-5 h-5 mr-2" />
             완료하기
           </Button>
         </div>

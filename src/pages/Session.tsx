@@ -18,10 +18,12 @@ const Session = () => {
   const navigate = useNavigate();
   const userSessionTime = sessionData.sessionTime || 600;
   const isBot = sessionData.isBot || false;
+  const isSolo = sessionData.isSolo || false;
+  const isPartnerSession = !isSolo && (sessionData.mode === 'auto' || sessionData.mode === 'remote');
   
   const motivationMessages = [
     '지금 이 순간, 집중하고 있는 자신이 자랑스러워요!',
-    `${isBot ? '도우미가' : '파트너도'} 함께 열심히 하고 있어요 💪`,
+    `${isBot ? '도우미가' : isSolo ? '혼자서도' : '파트너도'} 함께 열심히 하고 있어요 💪`,
     '목표까지 한걸음씩 나아가고 있어요',
     '집중하는 시간이 쌓여 큰 성취가 될 거예요',
     '지금의 노력이 미래의 나를 만들어요'
@@ -34,13 +36,13 @@ const Session = () => {
     { type: 'rain', name: '빗소리' }
   ];
 
-  // 파트너가 듣고 있는 소리 시뮬레이션
+  // 파트너 세션에서만 파트너가 듣고 있는 소리 시뮬레이션
   useEffect(() => {
-    if (!isBot && Math.random() > 0.7) {
+    if (isPartnerSession && Math.random() > 0.3) { // 프로토타입용으로 확률 높임
       const randomAudio = audioOptions[Math.floor(Math.random() * audioOptions.length)];
       setPartnerAudio(randomAudio.type);
     }
-  }, [isBot]);
+  }, [isPartnerSession]);
 
   useEffect(() => {
     if (!isRunning || timeLeft <= 0) return;
@@ -196,7 +198,9 @@ const Session = () => {
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">집중 세션 진행 중</h1>
           <p className="text-gray-600">
-            {isBot ?' 도우미와' : '파트너와'} 함께 집중하고 있습니다
+            {isSolo ? '혼자서 집중하고 있습니다' : 
+             isBot ? '도우미와 함께 집중하고 있습니다' : 
+             '파트너와 함께 집중하고 있습니다'}
           </p>
         </div>
 
@@ -239,8 +243,8 @@ const Session = () => {
           </div>
         </div>
 
-        {/* 파트너가 듣고 있는 음악 표시 */}
-        {partnerAudio && !isBot && (
+        {/* 파트너가 듣고 있는 음악 표시 - 파트너 세션에서만 */}
+        {partnerAudio && isPartnerSession && (
           <div className="mb-4">
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between">

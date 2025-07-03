@@ -3,16 +3,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { Timer, FileText, Trophy, Target, Star, Gift } from 'lucide-react';
+import { Timer, FileText, Trophy, Target, Star, Gift, Coffee, Clock, TrendingUp } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
 
   // 시뮬레이션용 데이터
   const recentBadge = {
-    character: '👶',
-    name: '신생아',
-    theme: '첫 걸음마 아기'
+    character: '🐣',
+    name: '첫 걸음마',
+    theme: '첫 집중 세션 완료'
   };
 
   const todayMission = {
@@ -21,7 +21,7 @@ const Index = () => {
   };
 
   const badgeStats = {
-    total: 11, // 어린이 뱃지와 히든 뱃지 추가로 증가
+    total: 11,
     unlocked: 2
   };
 
@@ -63,14 +63,25 @@ const Index = () => {
             파트너와 함께 깊은 집중을 경험하고<br />
             새로운 뱃지를 획득해보세요
           </p>
-          <Button 
-            onClick={() => navigate('/session-mode')}
-            size="lg"
-            className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-4 font-semibold"
-          >
-            <Timer className="w-5 h-5 mr-2" />
-            집중 세션 시작하기
-          </Button>
+          <div className="flex gap-3 justify-center">
+            <Button 
+              onClick={() => navigate('/session-mode')}
+              size="lg"
+              className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-6 py-4 font-semibold"
+            >
+              <Timer className="w-5 h-5 mr-2" />
+              일반 집중
+            </Button>
+            <Button 
+              onClick={() => navigate('/pomodoro-mode')}
+              size="lg"
+              variant="outline"
+              className="border-2 border-white text-white hover:bg-white/10 text-lg px-6 py-4 font-semibold"
+            >
+              <Coffee className="w-5 h-5 mr-2" />
+              뽀모도로
+            </Button>
+          </div>
         </div>
 
         {/* 오늘의 집중 미션 */}
@@ -158,25 +169,54 @@ const Index = () => {
           </p>
         </div>
 
-        {/* 통계 미리보기 */}
+        {/* 통계 미리보기 - 개선된 버전 */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
           <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">오늘의 집중 현황</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">142</div>
-              <div className="text-sm text-gray-600">현재 세션 수</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 현재 통계 */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+                <Clock className="w-5 h-5 mr-2 text-blue-500" />
+                실시간 현황
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center bg-blue-50 p-3 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">142</div>
+                  <div className="text-xs text-blue-700">현재 세션 수</div>
+                </div>
+                <div className="text-center bg-green-50 p-3 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">89%</div>
+                  <div className="text-xs text-green-700">평균 성공률</div>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">89%</div>
-              <div className="text-sm text-gray-600">평균 성공률</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">2.3분</div>
-              <div className="text-sm text-gray-600">평균 매칭 시간</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">1,247</div>
-              <div className="text-sm text-gray-600">오늘 총 시간(분)</div>
+            
+            {/* 추천 및 비교 통계 */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-purple-500" />
+                권장 & 평균
+              </h3>
+              <div className="space-y-2">
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-purple-700">전문가 권장</span>
+                    <span className="font-bold text-purple-600">90-120분/일</span>
+                  </div>
+                </div>
+                <div className="bg-orange-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-orange-700">사용자 평균</span>
+                    <span className="font-bold text-orange-600">67분/일</span>
+                  </div>
+                </div>
+                <div className="bg-pink-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-pink-700">내 오늘 기록</span>
+                    <span className="font-bold text-pink-600">45분</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
