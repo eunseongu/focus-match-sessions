@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Timer, QrCode, Users } from 'lucide-react';
+import { Timer, QrCode, Users, User, Link } from 'lucide-react';
 
 const SessionMode = () => {
   const navigate = useNavigate();
@@ -13,6 +13,16 @@ const SessionMode = () => {
 
   const handleQRMatching = () => {
     navigate('/qr-matching');
+  };
+
+  const handleSoloSession = () => {
+    navigate('/session-request', { state: { mode: 'solo' } });
+  };
+
+  const handleRemoteMatching = () => {
+    // 간단한 참여 코드 생성
+    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    navigate('/session-request', { state: { mode: 'remote', roomCode } });
   };
 
   return (
@@ -27,6 +37,20 @@ const SessionMode = () => {
         </div>
 
         <div className="space-y-4">
+          {/* 혼자 집중하기 */}
+          <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-green-300 transition-colors">
+            <div className="flex items-center mb-3">
+              <User className="w-6 h-6 text-green-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-800">혼자 집중하기</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              혼자서 조용히 집중하고 싶을 때. 뱃지 획득도 가능합니다.
+            </p>
+            <Button onClick={handleSoloSession} className="w-full bg-green-600 hover:bg-green-700">
+              혼자 시작하기
+            </Button>
+          </div>
+
           {/* 자동 매칭 */}
           <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 transition-colors">
             <div className="flex items-center mb-3">
@@ -34,11 +58,24 @@ const SessionMode = () => {
               <h3 className="text-lg font-semibold text-gray-800">자동 매칭</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">
-              비슷한 시간대와 목표를 가진 사용자와 자동으로 매칭됩니다. 
-              상대가 없으면 집중 도우미 봇과 함께 진행됩니다.
+              비슷한 시간대와 목표를 가진 사용자와 자동으로 매칭됩니다.
             </p>
             <Button onClick={handleAutoMatching} className="w-full">
               자동 매칭 시작
+            </Button>
+          </div>
+
+          {/* 원격 매칭 */}
+          <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-orange-300 transition-colors">
+            <div className="flex items-center mb-3">
+              <Link className="w-6 h-6 text-orange-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-800">원격 매칭</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              참여 코드를 공유하여 원격지 친구와 함께 집중합니다.
+            </p>
+            <Button onClick={handleRemoteMatching} variant="outline" className="w-full border-orange-300 hover:bg-orange-50">
+              원격 매칭 시작
             </Button>
           </div>
 

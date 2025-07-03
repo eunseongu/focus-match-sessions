@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Bot } from 'lucide-react';
+import { Timer, Bot, Link } from 'lucide-react';
 
 const Matching = () => {
   const [isMatching, setIsMatching] = useState(true);
@@ -16,8 +16,12 @@ const Matching = () => {
   useEffect(() => {
     const matchingTimer = setTimeout(() => {
       setIsMatching(false);
-      // Bot 매칭 시뮬레이션 (30초 후 Bot 매칭)
-      if (sessionData.mode === 'auto' && Math.random() > 0.5) {
+      
+      if (sessionData.mode === 'remote') {
+        // 원격 매칭의 경우
+        setMatchedUser(`사용자${Math.floor(Math.random() * 999)}`);
+      } else if (sessionData.mode === 'auto' && Math.random() > 0.5) {
+        // Bot 매칭 시뮬레이션
         setIsBot(true);
         const botNames = ['집중 도우미 준', '포커스봇 소영', '몰입이', '집중러 민수'];
         setMatchedUser(botNames[Math.floor(Math.random() * botNames.length)]);
@@ -29,8 +33,8 @@ const Matching = () => {
     return () => clearTimeout(matchingTimer);
   }, [sessionData.mode]);
 
-  const handleStartAuth = () => {
-    navigate('/auth-entry', { state: { ...sessionData, isBot, matchedUser } });
+  const handleStartSession = () => {
+    navigate('/session', { state: { ...sessionData, isBot, matchedUser } });
   };
 
   const handleCancel = () => {
@@ -45,7 +49,9 @@ const Matching = () => {
           
           <h1 className="text-2xl font-bold text-gray-800 mb-2">매칭 중...</h1>
           <p className="text-gray-600 mb-4">
-            {sessionData.mode === 'qr' ? 'QR 파트너와 연결' : '집중 파트너를 찾고 있습니다'}
+            {sessionData.mode === 'qr' ? 'QR 파트너와 연결' : 
+             sessionData.mode === 'remote' ? '원격 파트너를 찾고 있습니다' :
+             '집중 파트너를 찾고 있습니다'}
           </p>
           
           {/* 선택한 조건 표시 */}
@@ -62,10 +68,23 @@ const Matching = () => {
             </div>
           )}
           
+          {sessionData.roomCode && (
+            <div className="bg-blue-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-blue-700">
+                참여 코드: <span className="font-mono font-bold">{sessionData.roomCode}</span>
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                친구에게 이 코드를 공유하세요
+              </p>
+            </div>
+          )}
+          
           <div className="bg-orange-50 p-4 rounded-lg mb-6">
             <p className="text-sm text-orange-700">
               {sessionData.mode === 'auto' 
                 ? '30초 내에 상대가 없으면 봇과 자동 매칭됩니다' 
+                : sessionData.mode === 'remote'
+                ? '참여 코드를 입력한 상대와 매칭됩니다'
                 : '상대방이 연결될 때까지 기다려주세요'}
             </p>
           </div>
@@ -82,10 +101,14 @@ const Matching = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-          isBot ? 'bg-purple-100' : 'bg-green-100'
+          isBot ? 'bg-purple-100' : 
+          sessionData.mode === 'remote' ? 'bg-orange-100' :
+          'bg-green-100'
         }`}>
           {isBot ? (
             <Bot className="w-8 h-8 text-purple-600" />
+          ) : sessionData.mode === 'remote' ? (
+            <Link className="w-8 h-8 text-orange-600" />
           ) : (
             <Timer className="w-8 h-8 text-green-600" />
           )}
@@ -93,7 +116,11 @@ const Matching = () => {
         
         <h1 className="text-2xl font-bold text-gray-800 mb-2">매칭 완료!</h1>
         <p className="text-gray-600 mb-6">
-          <span className={`font-semibold ${isBot ? 'text-purple-600' : 'text-green-600'}`}>
+          <span className={`font-semibold ${
+            isBot ? 'text-purple-600' : 
+            sessionData.mode === 'remote' ? 'text-orange-600' :
+            'text-green-600'
+          }`}>
             {matchedUser}
           </span>
           {isBot ? '(AI 도우미)' : ''}님과 매칭되었습니다
@@ -106,15 +133,9 @@ const Matching = () => {
             </p>
           </div>
         )}
-        
-        <div className={`p-4 rounded-lg mb-6 ${isBot ? 'bg-purple-50' : 'bg-green-50'}`}>
-          <p className={`text-sm ${isBot ? 'text-purple-700' : 'text-green-700'}`}>
-            "집중 시작" 문구를 입력하여 입장 인증을 완료해주세요
-          </p>
-        </div>
 
-        <Button onClick={handleStartAuth} className="w-full">
-          입장 인증 시작
+        <Button onClick={handleStartSession} className="w-full">
+          집중 세션 시작하기
         </Button>
       </div>
     </div>

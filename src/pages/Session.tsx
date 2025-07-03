@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Timer, Clock, Lock, AlertTriangle, Bot, Zap } from 'lucide-react';
+import { Timer, Clock, Lock, AlertTriangle, Bot, Zap, Volume2, VolumeX } from 'lucide-react';
 
 const Session = () => {
   const location = useLocation();
@@ -12,14 +12,12 @@ const Session = () => {
   const [partnerProgress] = useState(85);
   const [canExit, setCanExit] = useState(false);
   const [motivationMessage, setMotivationMessage] = useState('');
-  const [partnerEmoji, setPartnerEmoji] = useState('');
-  const [sentEmoji, setSentEmoji] = useState('');
-  const [emojiCooldown, setEmojiCooldown] = useState(false);
+  const [audioType, setAudioType] = useState<string | null>(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
   const navigate = useNavigate();
   const userSessionTime = sessionData.sessionTime || 600;
   const isBot = sessionData.isBot || false;
-  const emojis = ['👍', '❤️', '☕', '⚡', '🔥', '💪'];
   
   const motivationMessages = [
     '지금 이 순간, 집중하고 있는 자신이 자랑스러워요!',
@@ -27,6 +25,13 @@ const Session = () => {
     '목표까지 한걸음씩 나아가고 있어요',
     '집중하는 시간이 쌓여 큰 성취가 될 거예요',
     '지금의 노력이 미래의 나를 만들어요'
+  ];
+
+  const audioOptions = [
+    { type: 'whitenoise', name: '화이트 노이즈' },
+    { type: 'lofi', name: '로파이 힙합' },
+    { type: 'cafe', name: '카페 소음' },
+    { type: 'rain', name: '빗소리' }
   ];
 
   useEffect(() => {
@@ -37,6 +42,8 @@ const Session = () => {
         if (prev <= 1) {
           setIsRunning(false);
           setCanExit(true);
+          // 브라우저 탭 타이틀을 완료로 변경
+          document.title = '🎉 세션 완료! - FocusMatch';
           return 0;
         }
         
@@ -45,6 +52,14 @@ const Session = () => {
         if (elapsedTime >= 3 && !canExit) {
           setCanExit(true);
         }
+        
+        // 브라우저 탭 타이틀 업데이트
+        const minutes = Math.floor(prev / 60);
+        const seconds = prev % 60;
+        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        const progress = ((600 - prev) / 600) * 100;
+        const progressBar = '▣'.repeat(Math.floor(progress / 20)) + '▢'.repeat(5 - Math.floor(progress / 20));
+        document.title = `${timeString} ${progressBar} ${Math.round(progress)}% - FocusMatch`;
         
         return prev - 1;
       });
@@ -67,21 +82,12 @@ const Session = () => {
     return () => clearInterval(messageTimer);
   }, []);
 
-  // 파트너/봇 이모지 시뮬레이션
+  // 컴포넌트 언마운트 시 타이틀 복원
   useEffect(() => {
-    const emojiTimer = setInterval(() => {
-      if (Math.random() > 0.7) {
-        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-        setPartnerEmoji(randomEmoji);
-        
-        setTimeout(() => {
-          setPartnerEmoji('');
-        }, 3000);
-      }
-    }, isBot ? 20000 : 30000); // 봇은 더 자주 반응
-
-    return () => clearInterval(emojiTimer);
-  }, [isBot]);
+    return () => {
+      document.title = 'FocusMatch';
+    };
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -94,31 +100,25 @@ const Session = () => {
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
-  const handleSendEmoji = (emoji: string) => {
-    if (emojiCooldown) return;
+  const getExitButtonText = () => {
+    const halfTime = userSessionTime / 2;
+    const elapsedTime = 600 - timeLeft;
     
-    console.log('이모지 전송:', emoji);
-    setSentEmoji(emoji);
-    setEmojiCooldown(true);
-    
-    setTimeout(() => {
-      setSentEmoji('');
-    }, 2000);
-    
-    setTimeout(() => {
-      setEmojiCooldown(false);
-    }, 5000);
-    
-    if (isBot && Math.random() > 0.3) {
-      setTimeout(() => {
-        const responseEmojis = ['👍', '🔥', '💪', '❤️'];
-        const randomResponse = responseEmojis[Math.floor(Math.random() * responseEmojis.length)];
-        setPartnerEmoji(randomResponse);
-        
-        setTimeout(() => {
-          setPartnerEmoji('');
-        }, 3000);
-      }, 1000 + Math.random() * 2000);
+    if (elapsedTime < halfTime) {
+      const remainingMinutes = Math.ceil((halfTime - elapsedTime) / 60);
+      return `${remainingMinutes}분 후 퇴장 가능`;
+    }
+    return '조기 종료하기';
+  };
+
+  const toggleAudio = (type: string) => {
+    if (audioType === type && isAudioPlaying) {
+      setIsAudioPlaying(false);
+      setAudioType(null);
+    } else {
+      setAudioType(type);
+      setIsAudioPlaying(true);
+      console.log(`${type} 오디오 재생 시작`);
     }
   };
 
@@ -165,13 +165,6 @@ const Session = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative overflow-hidden">
-        {/* 전송한 이모지 애니메이션 */}
-        {sentEmoji && (
-          <div className="absolute top-4 right-4 text-4xl animate-bounce z-10">
-            {sentEmoji}
-          </div>
-        )}
-        
         {/* 동기 메시지 카드 */}
         {motivationMessage && (
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg mb-6 text-center animate-fade-in">
@@ -189,61 +182,67 @@ const Session = () => {
           </p>
         </div>
 
-        {/* 타이머 표시 */}
+        {/* 원형 타이머 */}
         <div className="text-center mb-8">
-          <div className="text-6xl font-mono font-bold text-purple-600 mb-4">
-            {formatTime(timeLeft)}
+          <div className="relative w-48 h-48 mx-auto mb-4">
+            <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="currentColor"
+                strokeWidth="8"
+                fill="transparent"
+                className="text-gray-200"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="currentColor"
+                strokeWidth="8"
+                fill="transparent"
+                strokeDasharray={`${2 * Math.PI * 45}`}
+                strokeDashoffset={`${2 * Math.PI * 45 * (1 - getProgress() / 100)}`}
+                className="text-purple-500 transition-all duration-1000"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-4xl font-mono font-bold text-purple-600">
+                  {formatTime(timeLeft)}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  {Math.round(getProgress())}% 완료
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-            <div 
-              className="bg-purple-500 h-3 rounded-full transition-all duration-1000"
-              style={{ width: `${getProgress()}%` }}
-            ></div>
-          </div>
-          <p className="text-sm text-gray-500">
-            진행률: {Math.round(getProgress())}%
-          </p>
         </div>
 
-        {/* 파트너/봇 상태 */}
-        <div className="bg-gray-50 p-4 rounded-lg mb-6 relative">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 flex items-center">
-              {isBot && <Bot className="w-4 h-4 mr-1 text-purple-600" />}
-              {isBot ? '도우미' : '파트너'} 진행률
-            </span>
-            {partnerEmoji && (
-              <span className="text-3xl animate-pulse absolute -top-2 right-4">{partnerEmoji}</span>
-            )}
-            <span className="text-sm text-gray-600">{partnerProgress}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className={`h-2 rounded-full ${isBot ? 'bg-purple-500' : 'bg-green-500'}`}
-              style={{ width: `${partnerProgress}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* 이모지 반응 */}
+        {/* 소리 공유 기능 */}
         <div className="mb-6">
           <p className="text-sm font-medium text-gray-700 mb-3 text-center">
-            {isBot ? '도우미에게' : '파트너에게'} 응원 보내기
-            {emojiCooldown && <span className="text-xs text-gray-500 ml-2">(5초 후 재전송 가능)</span>}
+            🎧 집중 배경음
           </p>
-          <div className="grid grid-cols-6 gap-2">
-            {emojis.map((emoji) => (
+          <div className="grid grid-cols-2 gap-2">
+            {audioOptions.map((audio) => (
               <button
-                key={emoji}
-                onClick={() => handleSendEmoji(emoji)}
-                disabled={emojiCooldown}
-                className={`p-2 text-2xl rounded-lg transition-all ${
-                  emojiCooldown 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:bg-gray-100 hover:scale-110 active:scale-95'
+                key={audio.type}
+                onClick={() => toggleAudio(audio.type)}
+                className={`p-3 text-sm rounded-lg border-2 transition-all flex items-center justify-center ${
+                  audioType === audio.type && isAudioPlaying
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                {emoji}
+                {audioType === audio.type && isAudioPlaying ? (
+                  <Volume2 className="w-4 h-4 mr-2" />
+                ) : (
+                  <VolumeX className="w-4 h-4 mr-2" />
+                )}
+                {audio.name}
               </button>
             ))}
           </div>
@@ -255,9 +254,10 @@ const Session = () => {
             onClick={handleEndSession}
             variant="outline"
             className="w-full"
+            disabled={!canExit && (600 - timeLeft) < userSessionTime / 2}
           >
             <Clock className="w-4 h-4 mr-2" />
-            조기 종료하기
+            {getExitButtonText()}
           </Button>
           
           <Button 
