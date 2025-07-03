@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { Timer, Coffee, ArrowLeft, User, Users, Link } from 'lucide-react';
 
@@ -11,6 +11,9 @@ const PomodoroMode = () => {
   const [focusTime, setFocusTime] = useState(25);
   const [breakTime, setBreakTime] = useState(5);
   const navigate = useNavigate();
+
+  const focusTimeOptions = [25, 30, 35, 40, 45];
+  const breakTimeOptions = [3, 5, 10, 15];
 
   const handleStartPomodoro = (mode: string) => {
     const pomodoroSettings = {
@@ -57,43 +60,49 @@ const PomodoroMode = () => {
                 <Label className="text-sm font-medium text-gray-700 mb-2 block">
                   총 세션 수
                 </Label>
-                <Input
-                  type="number"
-                  value={totalSessions}
-                  onChange={(e) => setTotalSessions(Number(e.target.value))}
-                  min="1"
-                  max="8"
-                  className="text-center"
-                />
+                <Select value={totalSessions.toString()} onValueChange={(value) => setTotalSessions(Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>{num}회</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                    집중 시간 (분)
+                    집중 시간
                   </Label>
-                  <Input
-                    type="number"
-                    value={focusTime}
-                    onChange={(e) => setFocusTime(Number(e.target.value))}
-                    min="15"
-                    max="60"
-                    className="text-center"
-                  />
+                  <Select value={focusTime.toString()} onValueChange={(value) => setFocusTime(Number(value))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {focusTimeOptions.map((time) => (
+                        <SelectItem key={time} value={time.toString()}>{time}분</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>
                   <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                    휴식 시간 (분)
+                    휴식 시간
                   </Label>
-                  <Input
-                    type="number"
-                    value={breakTime}
-                    onChange={(e) => setBreakTime(Number(e.target.value))}
-                    min="3"
-                    max="15"
-                    className="text-center"
-                  />
+                  <Select value={breakTime.toString()} onValueChange={(value) => setBreakTime(Number(value))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {breakTimeOptions.map((time) => (
+                        <SelectItem key={time} value={time.toString()}>{time}분</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>

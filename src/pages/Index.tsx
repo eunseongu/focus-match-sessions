@@ -10,7 +10,7 @@ const Index = () => {
 
   // 시뮬레이션용 데이터
   const recentBadge = {
-    character: '🐣',
+    character: '🐰',
     name: '첫 걸음마',
     theme: '첫 집중 세션 완료'
   };
@@ -53,68 +53,107 @@ const Index = () => {
 
       {/* 메인 컨텐츠 */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {/* 세션 시작 카드 - 최상단 배치 */}
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl p-8 shadow-xl text-white text-center">
-          <div className="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Timer className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold mb-4">🚀 새로운 집중 세션 시작</h2>
-          <p className="text-purple-100 mb-6 text-lg">
-            파트너와 함께 깊은 집중을 경험하고<br />
-            새로운 뱃지를 획득해보세요
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button 
-              onClick={() => navigate('/session-mode')}
-              size="lg"
-              className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-6 py-4 font-semibold"
-            >
-              <Timer className="w-5 h-5 mr-2" />
-              일반 집중
-            </Button>
-            <Button 
-              onClick={() => navigate('/pomodoro-mode')}
-              size="lg"
-              variant="outline"
-              className="border-2 border-white text-white hover:bg-white/10 text-lg px-6 py-4 font-semibold"
-            >
-              <Coffee className="w-5 h-5 mr-2" />
-              뽀모도로
-            </Button>
-          </div>
-        </div>
-
-        {/* 오늘의 집중 미션 */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
-          <div className="text-center">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Target className="w-8 h-8 text-white" />
+        {/* 집중 세션 시작 */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl p-8 shadow-xl text-white">
+          <div className="text-center mb-6">
+            <div className="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Timer className="w-10 h-10 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">🎯 오늘의 집중 미션</h2>
-            <p className="text-gray-600 mb-4">{todayMission.description}</p>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 px-4 py-1">
-              추천 시간: {todayMission.time}분
-            </Badge>
+            <h2 className="text-2xl font-bold mb-2">🎯 집중 세션 시작</h2>
+            <p className="text-blue-100 text-lg">
+              파트너와 함께 깊은 집중을 경험하고<br />
+              새로운 뱃지를 획득해보세요
+            </p>
           </div>
+          <Button 
+            onClick={() => navigate('/session-mode')}
+            size="lg"
+            className="w-full bg-white text-blue-600 hover:bg-gray-100 text-xl py-6 font-bold shadow-lg"
+          >
+            <Timer className="w-6 h-6 mr-3" />
+            집중 세션 시작하기
+          </Button>
         </div>
 
-        {/* 최근 받은 뱃지 */}
+        {/* 효율적으로 집중하기 (뽀모도로) */}
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-3xl p-8 shadow-xl text-white">
+          <div className="text-center mb-6">
+            <div className="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Coffee className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">🍅 효율적으로 집중하기</h2>
+            <p className="text-red-100 text-lg mb-4">
+              효율적으로 집중하고 싶으신가요?<br />
+              뽀모도로 학습법을 사용해보세요.
+            </p>
+            <div className="bg-white/20 p-4 rounded-xl">
+              <p className="text-sm text-red-100">
+                📚 25분 집중 → 5분 휴식을 반복하는 과학적 학습법
+              </p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => navigate('/pomodoro-mode')}
+            size="lg"
+            className="w-full bg-white text-red-600 hover:bg-gray-100 text-xl py-6 font-bold shadow-lg"
+          >
+            <Coffee className="w-6 h-6 mr-3" />
+            뽀모도로 시작하기
+          </Button>
+        </div>
+
+        {/* 집중 동물 친구들 섹션 */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <Star className="w-5 h-5 mr-2 text-yellow-500" />
-            🏅 최근 받은 뱃지
+          <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+            🐾 집중 동물 친구들과 함께해요
           </h2>
-          <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-2xl text-center">
-            <div className="text-6xl mb-3 animate-bounce">{recentBadge.character}</div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">{recentBadge.name}</h3>
-            <p className="text-sm text-gray-600">{recentBadge.theme}</p>
-            <Badge className="mt-3 bg-yellow-500 hover:bg-yellow-600">
-              새로 획득!
-            </Badge>
+          <div className="flex justify-center space-x-4 text-4xl">
+            <span className="animate-bounce" style={{ animationDelay: '0s' }}>🐰</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🐤</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🐻</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>🦊</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🐯</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.5s' }}>🐨</span>
+          </div>
+          <p className="text-center text-gray-600 mt-4">
+            각 동물마다 특별한 집중 시간이 있어요. 어떤 친구와 만날까요?
+          </p>
+        </div>
+
+        {/* 오늘의 집중 미션과 최근 받은 뱃지 - 수직 정렬 */}
+        <div className="grid grid-cols-1 gap-6">
+          {/* 오늘의 집중 미션 */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Target className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">🎯 오늘의 집중 미션</h2>
+              <p className="text-gray-600 mb-4">{todayMission.description}</p>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 px-4 py-1">
+                추천 시간: {todayMission.time}분
+              </Badge>
+            </div>
+          </div>
+
+          {/* 최근 받은 뱃지 */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <Star className="w-5 h-5 mr-2 text-yellow-500" />
+              🏅 최근 받은 뱃지
+            </h2>
+            <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-2xl text-center">
+              <div className="text-6xl mb-3 animate-bounce">{recentBadge.character}</div>
+              <h3 className="text-lg font-bold text-gray-800 mb-1">{recentBadge.name}</h3>
+              <p className="text-sm text-gray-600">{recentBadge.theme}</p>
+              <Badge className="mt-3 bg-yellow-500 hover:bg-yellow-600">
+                새로 획득!
+              </Badge>
+            </div>
           </div>
         </div>
 
-        {/* 나의 뱃지함 바로가기 - 카드 전체 클릭 가능 */}
+        {/* 나의 뱃지함 바로가기 */}
         <button
           onClick={() => navigate('/stats')}
           className="w-full bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30 hover:bg-white/95 transition-colors text-left"
@@ -151,25 +190,7 @@ const Index = () => {
           </div>
         </button>
 
-        {/* 동물 친구들 섹션 */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
-            🐾 집중 동물 친구들과 함께해요
-          </h2>
-          <div className="flex justify-center space-x-4 text-4xl">
-            <span className="animate-bounce" style={{ animationDelay: '0s' }}>🐣</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🐤</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🐰</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>🐻</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🦊</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.5s' }}>🐯</span>
-          </div>
-          <p className="text-center text-gray-600 mt-4">
-            각 동물마다 특별한 집중 시간이 있어요. 어떤 친구와 만날까요?
-          </p>
-        </div>
-
-        {/* 통계 미리보기 - 개선된 버전 */}
+        {/* 통계 미리보기 */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/30">
           <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">오늘의 집중 현황</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
